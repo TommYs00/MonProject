@@ -4,8 +4,8 @@ PAUSED = "paused"
 
 # Menu const
 BATTLE_MENU = "battle_menu"
-PLAYER_MENU = "battle_menu"
-GAME_MENU = "battle_menu"
+PLAYER_MENU = "player_menu"
+GAME_MENU = "game_menu"
 
 OPTIONS = "options"
 ACTION = "action"
