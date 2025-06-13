@@ -1,6 +1,6 @@
 import pygame, sys
 from player import Player
-from menu import Menu, GameMenu
+from menu import Menu, GameMenu, BattleMenu
 from map import MapManager
 from const import *
 import settings
@@ -15,6 +15,7 @@ class MonProject:
                        PAUSED: False}
 
         self.game_menu = GameMenu(self, GAME_MENU)
+        self.battle_menu = BattleMenu(self, BATTLE_MENU)
         self.game_map = MapManager(self)
 
         self.player = Player()
@@ -24,7 +25,8 @@ class MonProject:
         self.game_map.draw()
         self.display.fill((100,0 , 0), self.player.rect)
 
-
+        if Menu.status[BATTLE_MENU]:
+            self.battle_menu.draw()
         if Menu.status[GAME_MENU]:
             self.game_menu.draw()
 
@@ -45,8 +47,10 @@ class MonProject:
                     self.game_menu.toggle()
                 elif Menu.status[GAME_MENU]:
                     self.game_menu.check_action(event.key)
-                elif Menu.status[PLAYER_MENU]:
-                    pass
+                elif event.key == pygame.K_b: # --------------------------- NA POTRZEBY TESTÓW
+                    self.battle_menu.toggle()
+                elif Menu.status[BATTLE_MENU]:
+                    self.battle_menu.check_action(event.key)
 
     def quit(self):
         self.status[RUNNING] = False
