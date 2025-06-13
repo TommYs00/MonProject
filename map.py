@@ -1,7 +1,6 @@
 import pygame
 import settings
 
-
 class MapManager:
     def __init__(self, game):
         self.game = game
