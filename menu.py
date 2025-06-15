@@ -21,11 +21,11 @@ class Menu(ABC):
                      SELECTED: [None],
                      POSITION: [None]}
 
-    def _draw_under(self):
+    def _draw_extra(self):
         pass
 
     def draw(self):
-        self._draw_under()
+        self._draw_extra()
         for i, text in enumerate(self.menu[OPTIONS]):
             if self.menu[SELECTED][i]:
                 render = self.font.render("> " + text + " <", True, self.color, self.bg_color)
@@ -46,45 +46,48 @@ class Menu(ABC):
                     self.menu[ACTION][i]()
 
     @abstractmethod
+    def _default_menu(self):
+        pass
+
+    @abstractmethod
     def toggle(self):
         pass
 
 class GameMenu(Menu):
     def __init__(self, game, menu_type, status=False):
         super().__init__(game, menu_type, status)
-        self.menu = {OPTIONS: ["RESUME", "QUIT"],
-                     ACTION: [self.toggle, self.game.quit],
-                     SELECTED: [True, False],
-                     POSITION: [pygame.Vector2(settings.WIDTH // 2, settings.HEIGHT // 2 + i * 70) for i in range(2)]}
+        self._default_menu()
 
     def toggle(self):
         Menu.status[self.type] = not Menu.status[self.type]
         self.game.status[PAUSED] = any([i for i in Menu.status.values()])
 
+    def _default_menu(self):
+        self.menu[OPTIONS] = ["RESUME", "QUIT"]
+        self.menu[ACTION] = [self.toggle, self.game.quit]
+        self.menu[SELECTED] = [True, False]
+        self.menu[POSITION] = [pygame.Vector2(settings.WIDTH // 2, settings.HEIGHT // 2 + i * 70) for i in range(2)]
 
 class BattleMenu(Menu):
     def __init__(self, game, menu_type, status=False):
         super().__init__(game, menu_type, status)
-        self.menu = {OPTIONS: ["FIGHT", "ESCAPE"],
-                            ACTION: [self._fight, self.toggle],
-                            SELECTED: [True, False],
-                            POSITION: [pygame.Vector2(settings.WIDTH - 300, settings.HEIGHT - 200 + i * 70) for i in range(2)]}
+        self._default_menu()
 
-    def _fight(self):
-        self.menu = {OPTIONS: ["TACKLE", "DEBFF", "go back"],
-                     ACTION: [None, None, self._default],
-                     SELECTED: [True, False, False],
-                     POSITION: [pygame.Vector2(settings.WIDTH - 300, settings.HEIGHT - 200 + i * 70) for i in range(3)]}
+    def _default_menu(self):
+        self.menu[OPTIONS] = ["FIGHT", "ESCAPE"]
+        self.menu[ACTION] = [self._selected_fight, self.toggle]
+        self.menu[SELECTED] = [True, False]
+        self.menu[POSITION] = [pygame.Vector2(settings.WIDTH - 300, settings.HEIGHT - 200 + i * 70) for i in range(2)]
 
-    def _default(self):
-        self.menu = {OPTIONS: ["FIGHT", "ESCAPE"],
-                     ACTION: [self._fight, self.toggle],
-                     SELECTED: [True, False],
-                     POSITION: [pygame.Vector2(settings.WIDTH - 300, settings.HEIGHT - 200 + i * 70) for i in range(2)]}
+    def _selected_fight(self):
+        self.menu[OPTIONS] = ["TACKLE", "DEBFF", "go back"]
+        self.menu[ACTION] = [None, None, self._default_menu]
+        self.menu[SELECTED] = [True, False, False]
+        self.menu[POSITION] = [pygame.Vector2(settings.WIDTH - 300, settings.HEIGHT - 200 + i * 70) for i in range(3)]
 
     def toggle(self):
         Menu.status[self.type] = not Menu.status[self.type]
         self.game.status[PAUSED] = any([i for i in Menu.status.values()])
 
-    def _draw_under(self):
+    def _draw_extra(self):
         self.game.display.fill((255, 255, 255))
