@@ -2,9 +2,8 @@
 RUNNING = "running"
 PAUSED = "paused"
 
-# Menu const
+# UI const
 BATTLE_MENU = "battle_menu"
-PLAYER_MENU = "player_menu"
 GAME_MENU = "game_menu"
 
 OPTIONS = "options"

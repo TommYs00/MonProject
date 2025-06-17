@@ -1,6 +1,7 @@
 import pygame, sys
 from player import Player
-from menu import Menu, GameMenu, BattleMenu
+from ui import UI, GameUI, BattleUI
+from creature import Enemy, Ally
 from map import MapManager
 from const import *
 import settings
@@ -14,21 +15,21 @@ class MonProject:
         self.status = {RUNNING: True,
                        PAUSED: False}
 
-        self.game_menu = GameMenu(self, GAME_MENU)
-        self.battle_menu = BattleMenu(self, BATTLE_MENU)
+        self.esc_screen = GameUI(self, GAME_MENU)
+        self.battle_screen = BattleUI(self, BATTLE_MENU)
         self.game_map = MapManager(self)
 
-        self.player = Player()
+        self.player = Player(Ally)
 
     def update_display(self):
         self.display.fill((0, 0, 0))
         self.game_map.draw()
         self.display.fill((100,0 , 0), self.player.rect)
 
-        if Menu.status[BATTLE_MENU]:
-            self.battle_menu.draw()
-        if Menu.status[GAME_MENU]:
-            self.game_menu.draw()
+        if UI.status[BATTLE_MENU]:
+            self.battle_screen.draw()
+        if UI.status[GAME_MENU]:
+            self.esc_screen.draw()
 
         pygame.display.flip()
 
@@ -44,13 +45,14 @@ class MonProject:
                 self.quit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    self.game_menu.toggle()
-                elif Menu.status[GAME_MENU]:
-                    self.game_menu.check_action(event.key)
-                elif event.key == pygame.K_b: # --------------------------- NA POTRZEBY TESTÓW
-                    self.battle_menu.toggle()
-                elif Menu.status[BATTLE_MENU]:
-                    self.battle_menu.check_action(event.key)
+                    self.esc_screen.toggle()
+                elif UI.status[GAME_MENU]:
+                    self.esc_screen.check_action(event.key)
+                elif event.key == pygame.K_b: # --------------------------- TODO NA POTRZEBY TESTÓW
+                    self.battle_screen.prepare_fight(self.player.ally, Enemy())
+                    self.battle_screen.toggle()
+                elif UI.status[BATTLE_MENU]:
+                    self.battle_screen.check_action(event.key)
 
     def quit(self):
         self.status[RUNNING] = False

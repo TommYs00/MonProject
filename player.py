@@ -1,11 +1,13 @@
 import pygame
 import settings
+from creature import Ally
 
 class Player:
-    def __init__(self):
+    def __init__(self, ally):
         self.rect = pygame.rect.FRect(0, 0, 64, 64)
         self.direction = pygame.Vector2(0, 0)
         self.speed = 500
+        self.ally = Ally() # TODO: na potrzeby testów
 
     def move(self, actions, dt):
         self.direction.x = int(actions[pygame.K_d]) - int(actions[pygame.K_a])
