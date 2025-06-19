@@ -45,11 +45,11 @@ class Creature(ABC):
         if ability[DEBUFF_DMG]:
             for k,v in ability[DEBUFF_DMG].items():
                 if k == ATT:
-                    self.stats[ATT][0] -= v
+                    self.stats[ATT][0] -= v if self.stats[DEF][0] - v >= 0 else 0
                 if k == DEF:
-                    self.stats[DEF][0] -= v
+                    self.stats[DEF][0] -= v if self.stats[DEF][0] - v >= 0 else 0
                 if k == SPD:
-                    self.stats[SPD][0] -= v
+                    self.stats[SPD][0] -= v if self.stats[DEF][0] - v >= 0 else 0
         print(self.stats)
 
     def _load_data(self):  # ---------TODO na potrzeby testów z góry ustala statystyki bez ich faktycznego wczytywania
@@ -64,13 +64,13 @@ class Creature(ABC):
                     SPD: [2, 2]
         }
         self.abilities = {
-            1: {
+            0: {
                 ABILITY_NAME: "Fang Slam",
                 DMG_BASE: 8,
                 DMG_MOD: 4,
                 DEBUFF_DMG: 0,
             },
-            2: {
+            1: {
                 NAME: "Roar",
                 DMG_BASE: 0,
                 DMG_MOD: 0,
@@ -79,8 +79,8 @@ class Creature(ABC):
                     DEF: 1,
                     SPD: 0
                 }},
-            3: None,
-            4: None
+            2: None,
+            3: None
         }
 
     @abstractmethod

@@ -1,6 +1,6 @@
 import pygame, sys
 from player import Player
-from ui import UI, GameUI, BattleUI
+from ui import MenuUI, GameUI, BattleUI
 from creature import Enemy, Ally
 from map import MapManager
 from const import *
@@ -26,33 +26,37 @@ class MonProject:
         self.game_map.draw()
         self.display.fill((100,0 , 0), self.player.rect)
 
-        if UI.status[BATTLE_MENU]:
+        if MenuUI.status[BATTLE_MENU]:
             self.battle_screen.draw()
-        if UI.status[GAME_MENU]:
+        if MenuUI.status[GAME_MENU]:
             self.esc_screen.draw()
 
         pygame.display.flip()
 
     def check_key_events(self):
-        key_events = pygame.event.get()
+        pressed = pygame.key.get_pressed()
+        just_pressed = pygame.key.get_just_pressed()
         dt = self.clock.tick() / 1000
 
-        if not self.status[PAUSED]:
-            self.player.move(pygame.key.get_pressed(), dt)
+        self.quit() if pygame.event.get(pygame.QUIT) else None
 
-        for event in key_events:
-            if event.type == pygame.QUIT:
-                self.quit()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    self.esc_screen.toggle()
-                elif UI.status[GAME_MENU]:
-                    self.esc_screen.check_action(event.key)
-                elif event.key == pygame.K_b: # --------------------------- TODO NA POTRZEBY TESTÓW
-                    self.battle_screen.prepare_fight(self.player.ally, Enemy())
-                    self.battle_screen.toggle()
-                elif UI.status[BATTLE_MENU]:
-                    self.battle_screen.check_action(event.key)
+        if just_pressed[pygame.K_ESCAPE]:
+            if self.status[PAUSED] and MenuUI.status[GAME_MENU]:
+                self.esc_screen.toggle()
+            elif not self.status[PAUSED]:
+                self.esc_screen.toggle()
+
+        if not self.status[PAUSED]:
+            self.player.move(pressed, dt)
+
+        if just_pressed[pygame.K_b]:  # --------------------------- TODO NA POTRZEBY TESTÓW
+            self.battle_screen.prepare_fight(self.player.ally, Enemy())
+            self.battle_screen.toggle()
+
+        if MenuUI.status[GAME_MENU]:
+            self.esc_screen.check_action(just_pressed)
+        elif MenuUI.status[BATTLE_MENU]:
+            self.battle_screen.check_action(just_pressed)
 
     def quit(self):
         self.status[RUNNING] = False
