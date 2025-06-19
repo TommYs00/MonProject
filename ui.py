@@ -120,8 +120,10 @@ class BattleUI(UI):
         self.menu[POSITION] = [pygame.Vector2(settings.WIDTH - 300, settings.HEIGHT - 200 + i * 70) for i in range(2)]
 
     def _selected_fight(self):
-        self.menu[OPTIONS] = ["TACKLE", "DEBFF", "go back"]
-        self.menu[ACTION] = [None, None, self._default_menu]
+        self.menu[OPTIONS] = ["Fang Slam", "Roar", "go back"]
+        self.menu[ACTION] = [lambda: self.ally.use_ability(1, self.enemy),
+                             lambda: self.ally.use_ability(2, self.enemy),
+                             self._default_menu]
         self.menu[SELECTED] = [True, False, False]
         self.menu[POSITION] = [pygame.Vector2(settings.WIDTH - 300, settings.HEIGHT - 200 + i * 70) for i in range(3)]
 

@@ -15,48 +15,73 @@ class Creature(ABC):
     def __init__(self, new_creature):
         self._add(new_creature)
 
+        self.name: str
         self.id: int
-        self.level: int
-        self.exp: tuple
-        self._health: int
-        self.attack: int
-        self.defence: int
-        self.speed: int
+        self.stats: dict[
+                   LV: int,
+                   EXP: list[int],
+                   HP: list[int],
+                   ATT: list[int],
+                   DEF: list[int],
+                   SPD: list[int]]
 
-        self.abilities:dict
+        self.abilities: dict[int: {
+                ABILITY_NAME: str,
+                DMG_BASE: int,
+                DMG_MOD: int,
+                DEBUFF_DMG: dict[str:int]}]
 
         if True: # ----------------------------------- TODO Na potrzeby testów ustawione na True
             self._load_data()
 
-    def attack(self):
-            pass
+    def use_ability(self, ability, target):
+        target.receive_dmg(self.abilities[ability], self.stats[ATT][0])
+
+    def receive_dmg(self, ability, att):
+        print(ability)
+        hp_dmg =  ability[DMG_MOD] * max(0, att - max(0, self.stats[DEF][0])) + ability[DMG_BASE]
+        self.stats[HP][0] -= hp_dmg
+        self.stats[HP][0] = 0 if self.stats[HP][0] < 0 else self.stats[HP][0]
+        if ability[DEBUFF_DMG]:
+            for k,v in ability[DEBUFF_DMG].items():
+                if k == ATT:
+                    self.stats[ATT][0] -= v
+                if k == DEF:
+                    self.stats[DEF][0] -= v
+                if k == SPD:
+                    self.stats[SPD][0] -= v
+        print(self.stats)
 
     def _load_data(self):  # ---------TODO na potrzeby testów z góry ustala statystyki bez ich faktycznego wczytywania
-        self.id = 0
         self.name = "Chubboink"
-        self.level = random.randint(1, 3)
-        self.exp = 0
-        self._health = 40
-        self.attack = (3, 3)
-        self.defence = (2, 2)
-        self.speed = (2, 2)
-        self.abilities = {1: {"name": "Fang Slam",
-                              "dmg_base": 5,
-                              "dmg_mod": 4,
-                              "debuff_dmg": (0, 0, 0)},
-                          2: {"name": "Roar",
-                              "dmg_base": 0,
-                              "dmg_mod": 0,
-                              "debuff_dmg": (0, 1, 0)},
-                          3: None,
-                          4: None}
-
-    @property
-    def health(self):
-        return self._health
-    @health.setter
-    def health(self, v):
-        self._health = v if self._health - v > 0 else 0
+        self.id = 0
+        self.stats = {
+                    LV: random.randint(1, 3),
+                    EXP: [0, 30],
+                    HP: [40, 40],
+                    ATT: [3, 3],
+                    DEF: [2, 2],
+                    SPD: [2, 2]
+        }
+        self.abilities = {
+            1: {
+                ABILITY_NAME: "Fang Slam",
+                DMG_BASE: 8,
+                DMG_MOD: 4,
+                DEBUFF_DMG: 0,
+            },
+            2: {
+                NAME: "Roar",
+                DMG_BASE: 0,
+                DMG_MOD: 0,
+                DEBUFF_DMG: {
+                    ATT: 0,
+                    DEF: 1,
+                    SPD: 0
+                }},
+            3: None,
+            4: None
+        }
 
     @abstractmethod
     def _dead(self):
@@ -72,7 +97,6 @@ class Creature(ABC):
             cls._enemy = creature
         elif isinstance(creature, Ally):
             cls._allies.append(creature)
-
 
 class Enemy(Creature):
     def __init__(self):
