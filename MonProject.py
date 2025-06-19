@@ -1,6 +1,6 @@
 import pygame, sys
 from player import Player
-from ui import MenuUI, GameUI, BattleUI
+from ui import MenuUI, GameMenuUI, BattleMenuUI
 from creature import Enemy, Ally
 from map import MapManager
 from const import *
@@ -15,8 +15,8 @@ class MonProject:
         self.status = {RUNNING: True,
                        PAUSED: False}
 
-        self.esc_screen = GameUI(self, GAME_MENU)
-        self.battle_screen = BattleUI(self, BATTLE_MENU)
+        self.esc_screen = GameMenuUI(self, GAME_MENU)
+        self.battle_screen = BattleMenuUI(self, BATTLE_MENU)
         self.game_map = MapManager(self)
 
         self.player = Player(Ally)

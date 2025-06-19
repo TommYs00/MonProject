@@ -1,0 +1,36 @@
+{
+  "0": {
+    "id": 0,
+    "name": "Chubboink",
+    "front_img": "images/CHUBBOINK.png",
+    "back_img": "images/CHUBBOINK_B.png",
+    "stats": {
+      "level": 1,
+      "exp": [0, 30],
+      "health_points": [40, 40],
+      "attack": [3, 3],
+      "defence": [2, 2],
+      "speed": [2, 2]
+    },
+    "abilities": {
+      "0": {
+        "ability_name": "Fang Slam",
+        "dmg_base": 8,
+        "dmg_mod": 4,
+        "debuff_dmg": 0
+      },
+      "1": {
+        "ability_name": "Roar",
+        "dmg_base": 0,
+        "dmg_mod": 0,
+        "debuff_dmg": {
+          "attack": 0,
+          "defence": 1,
+          "speed": 0
+        }
+      },
+      "3": {},
+      "4": {}
+    }
+  }
+}

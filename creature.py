@@ -4,6 +4,7 @@ from const import *
 import random
 from abc import ABC, abstractmethod
 from typing import Optional, List
+import json
 
 # TODO: dodać domyśle wartości dla classy self.image i self.rect
 # TODO: zaimplementować wyświetlanie stworka w panelu walki
@@ -38,7 +39,6 @@ class Creature(ABC):
         target.receive_dmg(self.abilities[ability], self.stats[ATT][0])
 
     def receive_dmg(self, ability, att):
-        print(ability)
         hp_dmg =  ability[DMG_MOD] * max(0, att - max(0, self.stats[DEF][0])) + ability[DMG_BASE]
         self.stats[HP][0] -= hp_dmg
         self.stats[HP][0] = 0 if self.stats[HP][0] < 0 else self.stats[HP][0]
@@ -50,38 +50,20 @@ class Creature(ABC):
                     self.stats[DEF][0] -= v if self.stats[DEF][0] - v >= 0 else 0
                 if k == SPD:
                     self.stats[SPD][0] -= v if self.stats[DEF][0] - v >= 0 else 0
+        print(ability)
         print(self.stats)
 
-    def _load_data(self):  # ---------TODO na potrzeby testów z góry ustala statystyki bez ich faktycznego wczytywania
-        self.name = "Chubboink"
-        self.id = 0
-        self.stats = {
-                    LV: random.randint(1, 3),
-                    EXP: [0, 30],
-                    HP: [40, 40],
-                    ATT: [3, 3],
-                    DEF: [2, 2],
-                    SPD: [2, 2]
-        }
-        self.abilities = {
-            0: {
-                ABILITY_NAME: "Fang Slam",
-                DMG_BASE: 8,
-                DMG_MOD: 4,
-                DEBUFF_DMG: 0,
-            },
-            1: {
-                NAME: "Roar",
-                DMG_BASE: 0,
-                DMG_MOD: 0,
-                DEBUFF_DMG: {
-                    ATT: 0,
-                    DEF: 1,
-                    SPD: 0
-                }},
-            2: None,
-            3: None
-        }
+    def _load_data(self, index=0):
+        with open("creatures.json", "r") as json_data:
+            data = json.load(json_data)[str(index)]
+            self.id = data[ID]
+            self.name = data[NAME]
+            self.images = {FRONT_IMG: data[FRONT_IMG],
+                           BACK_IMG: data[BACK_IMG]}
+            self.stats = data[STATS]
+            self.abilities = {}
+            for k, v in data[ABILITIES].items():
+                self.abilities[int(k)] = v
 
     @abstractmethod
     def _dead(self):
@@ -98,18 +80,20 @@ class Creature(ABC):
         elif isinstance(creature, Ally):
             cls._allies.append(creature)
 
+
 class Enemy(Creature):
     def __init__(self):
         super().__init__(self)
-        self.image = pygame.transform.scale_by(pygame.image.load("images/CHUBBOINK.png"), 2).convert_alpha()  # TODO: na potrzeby testów
+        self.image = pygame.transform.scale_by(pygame.image.load(f"{self.images[FRONT_IMG]}"), 2).convert_alpha()  # TODO: na potrzeby testów
 
     def _dead(self):
         return NotImplementedError
 
+
 class Ally(Creature):
     def __init__(self):
         super().__init__(self)
-        self.image = pygame.transform.scale_by(pygame.image.load("images/CHUBBOINK_B.png"),2).convert_alpha()  # TODO: na potrzeby testów
+        self.image = pygame.transform.scale_by(pygame.image.load(f"{self.images[BACK_IMG]}"), 2).convert_alpha()  # TODO: na potrzeby testów
 
     def _dead(self):
         return NotImplementedError
