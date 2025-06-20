@@ -4,7 +4,7 @@ from pygame import SRCALPHA
 import settings
 from const import *
 from abc import ABC, abstractmethod
-from creature import Ally, Enemy
+from monster import Ally, Enemy
 
 class MenuUI(ABC):
     status = {}
@@ -20,11 +20,13 @@ class MenuUI(ABC):
         self.s_color = (200, 200, 200)
         self.bg_color = (0, 0, 0)
 
-        self.state = "default"
+        self.state = None
         self.menu_index = {"col": 0, "row": 0}
         self.cols, self.rows = 0, 0
         self.options = []
         self.positions = []
+
+        self._default_menu()
 
     def draw(self):
         surf = pygame.surface.Surface((300, 400), flags=SRCALPHA).convert_alpha()
@@ -62,10 +64,11 @@ class MenuUI(ABC):
 
         if just_pressed[pygame.K_RETURN]:
             selected = self.menu_index["col"] + self.menu_index["row"] * self.cols
+            print(selected)
             self._select_option(selected)
 
     def toggle(self):
-        self.state = "default"
+        self._default_menu()
         MenuUI.status[self.type] = not MenuUI.status[self.type]
         self.game.status[PAUSED] = any([i for i in MenuUI.status.values()])
 
@@ -80,7 +83,6 @@ class MenuUI(ABC):
 class GameMenuUI(MenuUI):
     def __init__(self, game, menu_type, status=False):
         super().__init__(game, menu_type, status)
-        self._default_menu()
 
     def _default_menu(self):
         self.state = UI_DEFAULT
@@ -99,7 +101,6 @@ class GameMenuUI(MenuUI):
 class BattleMenuUI(MenuUI):
     def __init__(self, game, menu_type, status=False):
         super().__init__(game, menu_type, status)
-        self._default_menu()
 
         self.ally = None
         self.enemy = None
@@ -110,8 +111,8 @@ class BattleMenuUI(MenuUI):
     def prepare_fight(self, ally, enemy):
         self.ally = ally
         self.enemy = enemy
-        self.enemy_ui = CreatureUI(enemy)
-        self.ally_ui = CreatureUI(ally)
+        self.enemy_ui = MonsterUI(enemy)
+        self.ally_ui = MonsterUI(ally)
 
     def check_action(self, just_pressed):
         super().check_action(just_pressed)
@@ -154,33 +155,59 @@ class BattleMenuUI(MenuUI):
 #                 pos.append((150 * c, 50 + r * 70))
 #         self.positions = pos
 
-class CreatureUI:
-    def __init__(self, creature):
-        self.creature = creature
+class MonsterUI:
+    def __init__(self, monster):
+        self.monster = monster
+        self.font = pygame.font.Font(size=24)
 
         # surface and images
         self.surf = pygame.surface.Surface((384, 400), pygame.SRCALPHA).convert_alpha()
+        self.info_bar = pygame.surface.Surface((280, 50), pygame.SRCALPHA).convert_alpha()
         self.platform = pygame.image.load("images/floor.png").convert_alpha()
-        self.creature_image = creature.image
+        self.monster_image = monster.image
 
         # rects
-        self.s_rect = self.surf.get_rect()
-        self.p_rect = self.platform.get_rect()
-        self.c_rect = self.creature_image.get_rect()
+        self.surf_rect = self.surf.get_rect()
+        self.platform_rect = self.platform.get_rect()
+        self.monster_rect = self.monster_image.get_rect()
+        self.ib_rect = self.info_bar.get_rect()
+        self.hp_rect = pygame.Rect(0, 0, 250, 5)
 
         self._set_rects()
 
     def draw(self, main_surf):
+        self._draw_monster(main_surf)
+        self._draw_info_bar(main_surf)
+
+    def _draw_monster(self, main_surf):
         self.surf.fill((0, 0, 0, 0))
-        self.surf.blit(self.platform, self.p_rect)
-        self.surf.blit(self.creature_image, self.c_rect)
-        main_surf.blit(self.surf, self.s_rect)
+        self.surf.blit(self.platform, self.platform_rect)
+        self.surf.blit(self.monster_image, self.monster_rect)
+        main_surf.blit(self.surf, self.surf_rect)
+
+    def _draw_info_bar(self, main_surf):
+        health_ratio = self.monster.return_health_ratio()
+        health_ratio_rect = pygame.rect.Rect(self.hp_rect.left, self.hp_rect.top, int(health_ratio * 250), 5)
+        text = self.font.render(f"{self.monster.name}   Lv: {self.monster.stats[LV]}", True, (240, 240, 240, 255))
+
+        self.info_bar.fill((0, 0, 0, 100))
+        self.info_bar.blit(text, (15, 15))
+        self.info_bar.fill((240, 240, 240, 255), self.hp_rect)
+        self.info_bar.fill((255, 0, 0, 255), health_ratio_rect)
+        pygame.draw.rect(self.info_bar, (100, 0, 0, 255),self.hp_rect, 1)
+        main_surf.blit(self.info_bar, self.ib_rect)
 
     def _set_rects(self):
-        if isinstance(self.creature, Enemy):
-            self.c_rect.center = (self.s_rect.centerx, self.s_rect.centery)
-            self.p_rect.topleft = (0, 180)
-            self.s_rect.right = settings.WIDTH - 200
-        elif isinstance(self.creature, Ally):
-            self.p_rect.topleft = (-50, 280)
-            self.s_rect.bottom = settings.HEIGHT - 170
+        self.hp_rect.centerx = self.ib_rect.centerx
+        self.hp_rect.bottom = self.ib_rect.bottom - 10
+        if isinstance(self.monster, Enemy):
+            self.monster_rect.center = (self.surf_rect.centerx, self.surf_rect.centery)
+            self.platform_rect.topleft = (0, 180)
+            self.surf_rect.right = settings.WIDTH - 200
+            self.ib_rect.centerx = settings.WIDTH // 2
+            self.ib_rect.y += 80
+        elif isinstance(self.monster, Ally):
+            self.platform_rect.topleft = (-50, 280)
+            self.surf_rect.bottom = settings.HEIGHT - 170
+            self.ib_rect.right = settings.WIDTH // 2
+            self.ib_rect.y += 400

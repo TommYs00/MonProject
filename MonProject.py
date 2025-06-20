@@ -1,7 +1,7 @@
 import pygame, sys
 from player import Player
 from ui import MenuUI, GameMenuUI, BattleMenuUI
-from creature import Enemy, Ally
+from monster import Enemy, Ally
 from map import MapManager
 from const import *
 import settings

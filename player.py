@@ -1,6 +1,6 @@
 import pygame
 import settings
-from creature import Ally
+from monster import Ally
 
 class Player:
     def __init__(self, ally):

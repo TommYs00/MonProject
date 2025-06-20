@@ -9,12 +9,12 @@ import json
 # TODO: dodać domyśle wartości dla classy self.image i self.rect
 # TODO: zaimplementować wyświetlanie stworka w panelu walki
 
-class Creature(ABC):
+class Monster(ABC):
     _enemy: Optional["Enemy"] = None
     _allies: Optional[List["Ally"]] = []
 
-    def __init__(self, new_creature):
-        self._add(new_creature)
+    def __init__(self, new_monster):
+        self._add(new_monster)
 
         self.name: str
         self.id: int
@@ -53,8 +53,11 @@ class Creature(ABC):
         print(ability)
         print(self.stats)
 
+    def return_health_ratio(self):
+        return self.stats[HP][0] / self.stats[HP][1]
+
     def _load_data(self, index=0):
-        with open("creatures.json", "r") as json_data:
+        with open("monsters.json", "r") as json_data:
             data = json.load(json_data)[str(index)]
             self.id = data[ID]
             self.name = data[NAME]
@@ -74,14 +77,14 @@ class Creature(ABC):
         pass
 
     @classmethod
-    def _add(cls, creature):
-        if isinstance(creature, Enemy):
-            cls._enemy = creature
-        elif isinstance(creature, Ally):
-            cls._allies.append(creature)
+    def _add(cls, monster):
+        if isinstance(monster, Enemy):
+            cls._enemy = monster
+        elif isinstance(monster, Ally):
+            cls._allies.append(monster)
 
 
-class Enemy(Creature):
+class Enemy(Monster):
     def __init__(self):
         super().__init__(self)
         self.image = pygame.transform.scale_by(pygame.image.load(f"{self.images[FRONT_IMG]}"), 2).convert_alpha()  # TODO: na potrzeby testów
@@ -90,7 +93,7 @@ class Enemy(Creature):
         return NotImplementedError
 
 
-class Ally(Creature):
+class Ally(Monster):
     def __init__(self):
         super().__init__(self)
         self.image = pygame.transform.scale_by(pygame.image.load(f"{self.images[BACK_IMG]}"), 2).convert_alpha()  # TODO: na potrzeby testów
