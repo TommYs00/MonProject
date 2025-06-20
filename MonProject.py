@@ -50,7 +50,7 @@ class MonProject:
             self.player.move(pressed, dt)
 
         if just_pressed[pygame.K_b]:  # --------------------------- TODO NA POTRZEBY TESTÓW
-            self.battle_screen.prepare_fight(self.player.ally, Enemy())
+            self.battle_screen.initialize(self.player.ally, Enemy())
             self.battle_screen.toggle()
 
         if MenuUI.status[GAME_MENU]:

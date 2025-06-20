@@ -1,4 +1,6 @@
 RESOLUTION = WIDTH, HEIGHT = 1280, 720
+exp_multiplier = 11
+
 
 # maps
 map_0 = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],

@@ -5,6 +5,7 @@ PAUSED = "paused"
 # UI State const
 UI_DEFAULT = "default"
 UI_FIGHT = "fight"
+UI_INFO = "info_panel"
 
 # BattleUI const
 BATTLE_MENU = "battle_menu"

@@ -1,13 +1,9 @@
 import pygame
 import settings
 from const import *
-import random
 from abc import ABC, abstractmethod
 from typing import Optional, List
 import json
-
-# TODO: dodać domyśle wartości dla classy self.image i self.rect
-# TODO: zaimplementować wyświetlanie stworka w panelu walki
 
 class Monster(ABC):
     _enemy: Optional["Enemy"] = None
@@ -15,6 +11,7 @@ class Monster(ABC):
 
     def __init__(self, new_monster):
         self._add(new_monster)
+        self.alive = True
 
         self.name: str
         self.id: int
@@ -32,16 +29,20 @@ class Monster(ABC):
                 DMG_MOD: int,
                 DEBUFF_DMG: dict[str:int]}]
 
-        if True: # ----------------------------------- TODO Na potrzeby testów ustawione na True
-            self._load_data()
+        self._load_data()
 
     def use_ability(self, ability, target):
         target.receive_dmg(self.abilities[ability], self.stats[ATT][0])
+        return self.abilities[ability]
 
     def receive_dmg(self, ability, att):
         hp_dmg =  ability[DMG_MOD] * max(0, att - max(0, self.stats[DEF][0])) + ability[DMG_BASE]
         self.stats[HP][0] -= hp_dmg
-        self.stats[HP][0] = 0 if self.stats[HP][0] < 0 else self.stats[HP][0]
+        if self.stats[HP][0] <= 0:
+            self.stats[HP][0] = 0
+            self.alive = False
+            self._dead()
+
         if ability[DEBUFF_DMG]:
             for k,v in ability[DEBUFF_DMG].items():
                 if k == ATT:
@@ -50,8 +51,17 @@ class Monster(ABC):
                     self.stats[DEF][0] -= v if self.stats[DEF][0] - v >= 0 else 0
                 if k == SPD:
                     self.stats[SPD][0] -= v if self.stats[DEF][0] - v >= 0 else 0
-        print(ability)
-        print(self.stats)
+
+    def restore_stats(self):
+        for k, v in self.stats.items():
+            if k != LV and k != EXP:
+                self.stats[k] = [v[1], v[1]]
+        self.alive = True
+
+    def gain_exp(self, enemy_lv):
+        exp = enemy_lv * settings.exp_multiplier
+        self.stats[EXP][0] += exp
+        return exp
 
     def return_health_ratio(self):
         return self.stats[HP][0] / self.stats[HP][1]
@@ -87,7 +97,7 @@ class Monster(ABC):
 class Enemy(Monster):
     def __init__(self):
         super().__init__(self)
-        self.image = pygame.transform.scale_by(pygame.image.load(f"{self.images[FRONT_IMG]}"), 2).convert_alpha()  # TODO: na potrzeby testów
+        self.image = pygame.transform.scale_by(pygame.image.load(f"{self.images[FRONT_IMG]}"), 2).convert_alpha()
 
     def _dead(self):
         return NotImplementedError
@@ -96,7 +106,7 @@ class Enemy(Monster):
 class Ally(Monster):
     def __init__(self):
         super().__init__(self)
-        self.image = pygame.transform.scale_by(pygame.image.load(f"{self.images[BACK_IMG]}"), 2).convert_alpha()  # TODO: na potrzeby testów
+        self.image = pygame.transform.scale_by(pygame.image.load(f"{self.images[BACK_IMG]}"), 2).convert_alpha()
 
     def _dead(self):
         return NotImplementedError
