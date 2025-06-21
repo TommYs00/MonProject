@@ -6,10 +6,17 @@ class BattleManager:
         self.ally = None
         self.enemy = None
         self.player_turn = None
+        self.fighting = None
+
+        self.attack_queue = []
+        self.info_queue = []
 
     def initialize(self, ally, enemy):
+        ally.restore_stats()
         self.ally = ally
         self.enemy = enemy
+        self.fighting = True
+        self.attack_queue.clear()
 
         if self.ally.stats[SPD] > self.enemy.stats[SPD]:
             self.player_turn = True
@@ -18,13 +25,45 @@ class BattleManager:
         else:
             self.player_turn = random.choice([True, False])
 
-    def control_battle(self, ability_key=None):
-        if self.player_turn:
+    def control_battle(self, state, ability_key=None):
+
+        if state == UI_INFO and self.info_queue:
+            return UI_INFO
+
+        elif not self.fighting:
+            return self.fighting
+
+        elif self.fighting:
+            message = ""
+            if state == UI_INFO and not self.info_queue and not self.attack_queue:
+                return UI_DEFAULT
+            elif state != UI_INFO:
+                if self.player_turn:
+                    message = self._player_attack(ability_key)
+                    self.attack_queue.append(self._computer_attack)
+                else:
+                    message = self._computer_attack()
+                    self.attack_queue.append(lambda: self._player_attack(ability_key))
+
+            elif state == UI_INFO and self.attack_queue:
+                message = self.attack_queue.pop(0)()
+
             self._change_turn()
-            return self._player_attack(ability_key)
-        else:
-            self._change_turn()
-            return self._ai_attack()
+            self.info_queue.append(message)
+            self._check_if_alive()
+            return UI_INFO
+
+    def return_info_string(self):
+        return self.info_queue.pop(0)
+
+    def _check_if_alive(self):
+        if not self.ally.alive:
+            self.fighting = False
+            self.info_queue.append(f'Your {self.ally.name} has been defeated... The battle is over!')
+        elif not self.enemy.alive:
+            self.fighting = False
+            self.info_queue.append(f'The wild {self.enemy.name} has been defeated!')
+            self.info_queue.append(f'Your {self.ally.name} just gained {self.ally.gain_exp(self.enemy.stats[LV])} exp. The battle is over!')
 
     def _player_attack(self, ability_key):
         ability = self.ally.use_ability(ability_key, self.enemy)
@@ -43,7 +82,7 @@ class BattleManager:
 
         return string
 
-    def _ai_attack(self):
+    def _computer_attack(self):
         ability_key = random.randint(0, 3)
         while self.enemy.abilities[ability_key] == {}:
             ability_key = random.randint(0, 3)

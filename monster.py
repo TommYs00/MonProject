@@ -39,8 +39,6 @@ class Monster(ABC):
         hp_dmg =  ability[DMG_MOD] * max(0, att - max(0, self.stats[DEF][0])) + ability[DMG_BASE]
         self.stats[HP][0] -= hp_dmg
         if self.stats[HP][0] <= 0:
-            self.stats[HP][0] = 0
-            self.alive = False
             self._dead()
 
         if ability[DEBUFF_DMG]:
@@ -58,11 +56,6 @@ class Monster(ABC):
                 self.stats[k] = [v[1], v[1]]
         self.alive = True
 
-    def gain_exp(self, enemy_lv):
-        exp = enemy_lv * settings.exp_multiplier
-        self.stats[EXP][0] += exp
-        return exp
-
     def return_health_ratio(self):
         return self.stats[HP][0] / self.stats[HP][1]
 
@@ -78,8 +71,12 @@ class Monster(ABC):
             for k, v in data[ABILITIES].items():
                 self.abilities[int(k)] = v
 
-    @abstractmethod
     def _dead(self):
+        self.stats[HP][0] = 0
+        self.alive = False
+
+    @abstractmethod
+    def gain_exp(self, enemy_lv):
         pass
 
     @classmethod
@@ -99,14 +96,15 @@ class Enemy(Monster):
         super().__init__(self)
         self.image = pygame.transform.scale_by(pygame.image.load(f"{self.images[FRONT_IMG]}"), 2).convert_alpha()
 
-    def _dead(self):
-        return NotImplementedError
-
+    def gain_exp(self, enemy_lv):
+        return 0
 
 class Ally(Monster):
     def __init__(self):
         super().__init__(self)
         self.image = pygame.transform.scale_by(pygame.image.load(f"{self.images[BACK_IMG]}"), 2).convert_alpha()
 
-    def _dead(self):
-        return NotImplementedError
+    def gain_exp(self, enemy_lv):
+        exp = enemy_lv * settings.exp_multiplier
+        self.stats[EXP][0] += exp
+        return exp

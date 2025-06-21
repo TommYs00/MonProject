@@ -128,22 +128,25 @@ class BattleMenuUI(MenuUI):
 
     def check_action(self, just_pressed):
         super().check_action(just_pressed)
-        if just_pressed[pygame.K_ESCAPE] and not self.state == UI_DEFAULT:
+        if just_pressed[pygame.K_ESCAPE] and not self.state == UI_DEFAULT and not self.state == UI_INFO:
             self._menu_default()
 
     def _select_option(self, selected):
+
         if self.options[selected] == "FIGHT":
             self._menu_fight()
         elif self.options[selected]  == "ESCAPE":
             self.toggle()
-        elif self.state == UI_FIGHT:
-            string = self.battle_manager.control_battle(selected)
-            self._menu_info(string)
-        elif self.state == UI_INFO and not self.battle_manager.player_turn:
-            string = self.battle_manager.control_battle(selected)
-            self._menu_info(string)
-        else:
-            self._menu_default()
+
+        elif self.state == UI_FIGHT or self.state == UI_INFO:
+            new_state = self.battle_manager.control_battle(self.state, selected)
+
+            if new_state == UI_INFO:
+                self._menu_info(self.battle_manager.return_info_string())
+            elif new_state == UI_DEFAULT:
+                self._menu_default()
+            elif not new_state:
+                self.toggle()
 
 # ----- MENU ---------------------------------------------
     def _menu_default(self):
