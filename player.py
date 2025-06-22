@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 import pygame
 import settings
 from pytmx import load_pygame
@@ -11,16 +13,18 @@ class Player(pygame.sprite.Sprite):
 
         # tmx data
         self.tmx_data = load_pygame("images/player/player.tmx")
-        self.player_upper = self.tmx_data.get_layer_by_name("Upper")
-        self.player_lower = self.tmx_data.get_layer_by_name("Lower")
-        self.player_upper = [i for i in self.player_upper.tiles()]
-        self.player_lower = [i for i in self.player_lower.tiles()]
+        self.image_dict = defaultdict(dict)
+        for sprite, direction, surf in self.tmx_data.get_layer_by_name("player").tiles():
+            self.image_dict[direction][sprite] = surf
+
+        self.image_dict = dict(self.image_dict)
+        self.sprite_counter = 0
+        self.sprite_direction = 0 # y: 0 - front; y: 1 - left; y: 2 - right; y: 3 - back
 
         # image and rects
-        self.upper_image = pygame.transform.scale_by(self.player_upper[0][2], 4)
-        self.lower_image = pygame.transform.scale_by(self.player_lower[0][2], 4)
-        self.image_rect = self.upper_image.get_rect()
-        self.rect = pygame.rect.FRect(settings.staring_x, settings.starting_y, settings.tile_size, settings.tile_size)
+        self.image= pygame.transform.scale_by(self.image_dict[0][2], 4)
+        self.image_rect = self.image.get_rect()
+        self.rect = pygame.rect.FRect(settings.staring_x, settings.starting_y, 5, 5)
         self.rect.center = settings.staring_x, settings.starting_y
 
         # movement
@@ -28,7 +32,7 @@ class Player(pygame.sprite.Sprite):
         self.movement = pygame.Vector2(0, 0) # ruch w danej iteracji
         self.speed = 350
 
-    def move(self, actions, dt):
+    def move(self, actions, just_pressed, dt):
         self.direction.x = int(actions[pygame.K_d]) - int(actions[pygame.K_a])
         self.direction.y = int(actions[pygame.K_s]) - int(actions[pygame.K_w])
         self.direction = self.direction.normalize() if self.direction else self.direction
@@ -43,11 +47,27 @@ class Player(pygame.sprite.Sprite):
             self.rect.centery -= self.movement.y
             self.movement.y = 0
 
+        self._check_sprite(just_pressed, dt)
+
     def draw(self):
-        self.image_rect.midbottom = self.rect.midtop
-        self.display.blit(self.upper_image, self.image_rect)
-        self.image_rect.midtop = self.rect.midtop
-        self.display.blit(self.lower_image, self.image_rect)
+        self.image_rect.midbottom = self.rect.midbottom
+        self.display.blit(self.image, self.image_rect)
+
+    def _check_sprite(self, just_pressed, dt):
+        self.sprite_counter += dt * 1000
+
+        if self.movement == self.direction:
+            self.sprite_counter = 0
+        if just_pressed[pygame.K_s]:
+            self.sprite_direction = 0
+        if just_pressed[pygame.K_a]:
+            self.sprite_direction = 1
+        if just_pressed[pygame.K_d]:
+            self.sprite_direction = 2
+        if just_pressed[pygame.K_w]:
+            self.sprite_direction = 3
+
+        self.image = pygame.transform.scale_by(self.image_dict[self.sprite_direction][self.sprite_counter // 150 % 4], 4)
 
     def _check_collision(self):
         return pygame.sprite.spritecollide(self, self.collide_group, False)

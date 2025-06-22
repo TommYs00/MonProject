@@ -5,26 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cfb2ff77-25ac-4768-b715-0b531d643ee9" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/images/player/player.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/images/player/player.tiled-session" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/images/player/player.tmx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/images/player/player.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/images/player/player.xcf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/images/tilesets/game_map.tmx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/images/tilesets/tileset.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/images/tilesets/tileset.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MonProject.py" beforeDir="false" afterPath="$PROJECT_DIR$/MonProject.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/const.py" beforeDir="false" afterPath="$PROJECT_DIR$/const.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/CHUBBOINK.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/monsters/front/CHUBBOINK.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/CHUBBOINK_B.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/monsters/back/CHUBBOINK.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/floor.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/misc/floor.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/map.py" beforeDir="false" afterPath="$PROJECT_DIR$/map.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/monster.py" beforeDir="false" afterPath="$PROJECT_DIR$/monster.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/monsters.json" beforeDir="false" afterPath="$PROJECT_DIR$/monsters.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/player/player.tiled-session" beforeDir="false" afterPath="$PROJECT_DIR$/images/player/player.tiled-session" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/player/player.tmx" beforeDir="false" afterPath="$PROJECT_DIR$/images/player/player.tmx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/player.py" beforeDir="false" afterPath="$PROJECT_DIR$/player.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

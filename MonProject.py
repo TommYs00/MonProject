@@ -47,7 +47,7 @@ class MonProject:
                 self.esc_screen.toggle()
 
         if not self.status[PAUSED]:
-            self.player.move(pressed, dt)
+            self.player.move(pressed, just_pressed, dt)
             self._check_collision()
 
         if self.game_map.battle_encounter <= 0:

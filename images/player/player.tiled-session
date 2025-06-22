@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "C:/Users/tomis/Desktop/Programowanie/Python 2025/Mon Project/images/tilesets/game_map.tmx",
+    "activeFile": "player.tmx",
     "expandedProjectPaths": [
     ],
     "fileStates": {
@@ -15,45 +15,58 @@
                 "y": 95.8773487893802
             }
         },
+        "C:/Users/tomis/Desktop/Programowanie/Python 2025/Mon Project/images/tilesets/player.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "C:/Users/tomis/Desktop/Programowanie/Python 2025/Mon Project/images/tilesets/tileset.tsx": {
             "scaleInDock": 1
         },
         "player.tmx": {
-            "scale": 3,
-            "selectedLayer": 1,
+            "scale": 5.5,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 36,
-                "y": 63.83333333333332
+                "x": 26.36363636363636,
+                "y": 43.72727272727273
             }
         },
         "player.tsx": {
             "scaleInDock": 3,
             "scaleInEditor": 1
+        },
+        "playerV2.tmx": {
+            "scale": 3,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 28,
+                "y": 86.16666666666667
+            }
         }
     },
     "last.imagePath": "C:/Users/tomis/Desktop/Programowanie/Python 2025/Mon Project/images/player",
     "map.height": 8,
     "map.lastUsedFormat": "tmx",
-    "map.tileHeight": 16,
+    "map.tileHeight": 32,
     "map.tileWidth": 18,
     "map.width": 8,
     "openFiles": [
-        "player.tmx",
-        "player.tsx",
-        "C:/Users/tomis/Desktop/Programowanie/Python 2025/Mon Project/images/tilesets/game_map.tmx"
+        "C:/Users/tomis/Desktop/Programowanie/Python 2025/Mon Project/images/tilesets/player.tsx",
+        "player.tmx"
     ],
     "project": "player.tiled-project",
     "recentFiles": [
+        "C:/Users/tomis/Desktop/Programowanie/Python 2025/Mon Project/images/tilesets/player.tsx",
         "player.tmx",
-        "player.tsx",
-        "C:/Users/tomis/Desktop/Programowanie/Python 2025/Mon Project/images/tilesets/game_map.tmx"
+        "playerV2.tmx",
+        "C:/Users/tomis/Desktop/Programowanie/Python 2025/Mon Project/images/tilesets/game_map.tmx",
+        "player.tsx"
     ],
     "resizeMap.removeObjects": true,
     "tileset.lastUsedFormat": "tsx",
     "tileset.margin": 0,
     "tileset.spacing": 0,
     "tileset.tileSize": {
-        "height": 16,
+        "height": 32,
         "width": 18
     }
 }
