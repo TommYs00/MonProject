@@ -1,0 +1,59 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "C:/Users/tomis/Desktop/Programowanie/Python 2025/Mon Project/images/tilesets/game_map.tmx",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+        "C:/Users/tomis/Desktop/Programowanie/Python 2025/Mon Project/images/tilesets/game_map.tmx": {
+            "scale": 3.3428124999999995,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 160.04487239412921,
+                "y": 95.8773487893802
+            }
+        },
+        "C:/Users/tomis/Desktop/Programowanie/Python 2025/Mon Project/images/tilesets/tileset.tsx": {
+            "scaleInDock": 1
+        },
+        "player.tmx": {
+            "scale": 3,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 36,
+                "y": 63.83333333333332
+            }
+        },
+        "player.tsx": {
+            "scaleInDock": 3,
+            "scaleInEditor": 1
+        }
+    },
+    "last.imagePath": "C:/Users/tomis/Desktop/Programowanie/Python 2025/Mon Project/images/player",
+    "map.height": 8,
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 16,
+    "map.tileWidth": 18,
+    "map.width": 8,
+    "openFiles": [
+        "player.tmx",
+        "player.tsx",
+        "C:/Users/tomis/Desktop/Programowanie/Python 2025/Mon Project/images/tilesets/game_map.tmx"
+    ],
+    "project": "player.tiled-project",
+    "recentFiles": [
+        "player.tmx",
+        "player.tsx",
+        "C:/Users/tomis/Desktop/Programowanie/Python 2025/Mon Project/images/tilesets/game_map.tmx"
+    ],
+    "resizeMap.removeObjects": true,
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.margin": 0,
+    "tileset.spacing": 0,
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 18
+    }
+}

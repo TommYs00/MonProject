@@ -2,8 +2,7 @@
   "0": {
     "id": 0,
     "name": "Chubboink",
-    "front_img": "images/CHUBBOINK.png",
-    "back_img": "images/CHUBBOINK_B.png",
+    "img": "CHUBBOINK.png",
     "stats": {
       "level": 1,
       "exp": [0, 30],

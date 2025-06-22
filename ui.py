@@ -203,7 +203,7 @@ class MonsterUI:
         # surface and images
         self.surf = pygame.surface.Surface((384, 400), pygame.SRCALPHA).convert_alpha()
         self.info_bar = pygame.surface.Surface((280, 50), pygame.SRCALPHA).convert_alpha()
-        self.platform = pygame.image.load("images/floor.png").convert_alpha()
+        self.platform = pygame.image.load("images/misc/floor.png").convert_alpha()
         self.monster_image = None
 
         # rects

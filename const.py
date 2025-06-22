@@ -18,8 +18,7 @@ POSITION = "position"
 
 
 # Creature const
-FRONT_IMG = "front_img"
-BACK_IMG = "back_img"
+IMG = "img"
 ID = "id"
 NAME = "name"
 STATS = "stats"

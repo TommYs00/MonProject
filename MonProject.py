@@ -17,14 +17,14 @@ class MonProject:
 
         self.esc_screen = GameMenuUI(self, GAME_MENU)
         self.battle_screen = BattleMenuUI(self, BATTLE_MENU)
-        self.game_map = MapManager(self)
+        self.game_map = MapManager(self.display)
 
-        self.player = Player(Ally)
+        self.player = Player(self.display, self.game_map.collider_tiles, Ally())
 
     def update_display(self):
         self.display.fill((0, 0, 0))
         self.game_map.draw()
-        self.display.fill((100,0 , 0), self.player.rect)
+        self.player.draw()
 
         if MenuUI.status[BATTLE_MENU]:
             self.battle_screen.draw()
@@ -48,8 +48,10 @@ class MonProject:
 
         if not self.status[PAUSED]:
             self.player.move(pressed, dt)
+            self._check_collision()
 
-        if just_pressed[pygame.K_b]:  # --------------------------- TODO NA POTRZEBY TESTÓW
+        if self.game_map.battle_encounter <= 0:
+            self.game_map.new_encounter()
             self.battle_screen.initialize(self.player.ally, Enemy())
             self.battle_screen.toggle()
 
@@ -57,6 +59,10 @@ class MonProject:
             self.esc_screen.check_action(just_pressed)
         elif MenuUI.status[BATTLE_MENU]:
             self.battle_screen.check_action(just_pressed)
+
+    def _check_collision(self):
+       if pygame.sprite.spritecollideany(self.player, self.game_map.bush_tiles):
+           self.game_map.count_down(self.player.movement)
 
     def quit(self):
         self.status[RUNNING] = False

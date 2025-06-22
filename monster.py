@@ -15,6 +15,7 @@ class Monster(ABC):
 
         self.name: str
         self.id: int
+        self.image: str
         self.stats: dict[
                    LV: int,
                    EXP: list[int],
@@ -64,8 +65,7 @@ class Monster(ABC):
             data = json.load(json_data)[str(index)]
             self.id = data[ID]
             self.name = data[NAME]
-            self.images = {FRONT_IMG: data[FRONT_IMG],
-                           BACK_IMG: data[BACK_IMG]}
+            self.image = data[IMG]
             self.stats = data[STATS]
             self.abilities = {}
             for k, v in data[ABILITIES].items():
@@ -94,7 +94,7 @@ class Monster(ABC):
 class Enemy(Monster):
     def __init__(self):
         super().__init__(self)
-        self.image = pygame.transform.scale_by(pygame.image.load(f"{self.images[FRONT_IMG]}"), 2).convert_alpha()
+        self.image = pygame.transform.scale_by(pygame.image.load(f"images/monsters/front/{self.image}"), 2).convert_alpha()
 
     def gain_exp(self, enemy_lv):
         return 0
@@ -102,7 +102,7 @@ class Enemy(Monster):
 class Ally(Monster):
     def __init__(self):
         super().__init__(self)
-        self.image = pygame.transform.scale_by(pygame.image.load(f"{self.images[BACK_IMG]}"), 2).convert_alpha()
+        self.image = pygame.transform.scale_by(pygame.image.load(f"images/monsters/back/{self.image}"), 2).convert_alpha()
 
     def gain_exp(self, enemy_lv):
         exp = enemy_lv * settings.exp_multiplier
