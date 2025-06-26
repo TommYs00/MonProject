@@ -23,11 +23,11 @@
             "scaleInDock": 1
         },
         "player.tmx": {
-            "scale": 5.5,
+            "scale": 3,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 26.36363636363636,
-                "y": 43.72727272727273
+                "x": 15,
+                "y": 40.5
             }
         },
         "player.tsx": {

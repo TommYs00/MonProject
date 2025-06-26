@@ -1,30 +1,30 @@
 import pygame
-from pygame import SRCALPHA
+from abc import ABC, abstractmethod
 
 import settings
 from const import *
-from abc import ABC, abstractmethod
-from monster import Ally, Enemy
+from monster import Monster, Ally, Enemy
 from battlemenager import BattleManager
 
-class MenuUI(ABC):
-    status = {}
-    created = {}
+class UIMenu(ABC):
+    status = {} # TODO: do wywalenia
+    created = {} # TODO: do wywalenia
 
     def __init__(self, game, menu_type, status):
-        MenuUI.created[menu_type] = self
-        MenuUI.status[menu_type] = status
+        UIMenu.created[menu_type] = self
+        UIMenu.status[menu_type] = status
         self.game = game
         self.type = menu_type
         self.font = pygame.font.Font(size=48)
 
+        self.strategy = None
         self.state = None
         self.menu_index = {"col": 0, "row": 0}
         self.cols, self.rows = 0, 0
         self.options = []
         self.positions = []
 
-        self.surf = pygame.surface.Surface((300, 400), flags=SRCALPHA).convert_alpha()
+        self.surf = pygame.surface.Surface((300, 400), flags=pygame.SRCALPHA).convert_alpha()
         self.surf_rect = self.surf.get_rect()
         self.surf_rect.center = settings.WIDTH // 2, settings.HEIGHT // 2
 
@@ -32,8 +32,8 @@ class MenuUI(ABC):
 
     def toggle(self):
         self._menu_default()
-        MenuUI.status[self.type] = not MenuUI.status[self.type]
-        self.game.status[PAUSED] = any([i for i in MenuUI.status.values()])
+        UIMenu.status[self.type] = not UIMenu.status[self.type]
+        self.game.status[PAUSED] = any([i for i in UIMenu.status.values()])
 
     def draw(self):
         self.surf.fill((0, 0, 0, 100))
@@ -70,29 +70,143 @@ class MenuUI(ABC):
             selected = self.menu_index["col"] + self.menu_index["row"] * self.cols
             self._select_option(selected)
 
-    @abstractmethod
+        # if just_pressed[pygame.K_ESCAPE] and not self.state == UI_DEFAULT and not self.state == UI_INFO:
+        #     self._menu_default()
+
     def _select_option(self, selected):
-        pass
+        if self.options[selected] == RESUME:
+            self.toggle()
+        elif self.options[selected] == QUIT:
+            self.game.quit()
+        elif self.options[selected] == FIGHT:
+            self._menu_fight()
+        elif self.options[selected] == RUN:
+            self.toggle()
+
+        elif self.state == UI_FIGHT or self.state == UI_INFO:
+            new_state = self.battle_manager.control_battle(self.state, selected)
+
+            if new_state == UI_INFO:
+                self._menu_info(self.battle_manager.return_info_string())
+            elif new_state == UI_DEFAULT:
+                self._menu_default()
+            elif not new_state:
+                self.toggle()
+
+
+class MenuStrategy(ABC):
+    def __init__(self, parent_strategy=None):
+        self.strategy_name = None  # -> str
+        self.parent_strategy = parent_strategy
+        self.menu_index = {"col": 0, "row": 0}
+        self.cols, self.rows = None, None # -> int, int
+        self.options = None # -> list[str]
+        self.positions = None # -> list[tuple]
+
+        self.surf = None # -> pygame.surface.Surface
+        self.surf_rect = None # -> pygame.rect.Rect
+
+        self._initialize()
 
     @abstractmethod
-    def _menu_default(self):
+    def _initialize(self):
         pass
 
+    @staticmethod
+    def draw():
+        pass
 
-class GameMenuUI(MenuUI):
+# ------- STRATEGIES -------
+class MenuESC(MenuStrategy):
+    def __init__(self):
+        super().__init__()
+
+    def _initialize(self):
+        self.strategy_name = K_ESC
+        self.options = [RESUME, QUIT]
+        self.cols, self.rows = 1, 2
+        pos = []
+        for r in range(self.rows):
+            for c in range(self.cols):
+                pos.append((150 + 200 * c, 50 + r * 70))
+        self.positions = pos
+
+class MenuBattle(MenuStrategy):
+    def __init__(self):
+        super().__init__()
+
+    def _initialize(self):
+        self.state = UI_DEFAULT
+        self.menu_index = {"col": 0, "row": 0}
+        self.cols, self.rows = 2, 1
+        self.options = ["FIGHT", "RUN"]
+        pos = []
+        for r in range(self.rows):
+            for c in range(self.cols):
+                pos.append((100 + 200 * c, 50 + r * 70))
+        self.positions = pos
+
+        self.surf = pygame.surface.Surface((400, 200), flags=pygame.SRCALPHA).convert_alpha()
+        self.surf_rect = self.surf.get_rect()
+        self.surf_rect.right = settings.WIDTH - 20
+        self.surf_rect.bottom = settings.HEIGHT - 20
+
+class MenuFight(MenuStrategy):
+    def __init__(self):
+        super().__init__()
+
+    def _initialize(self):
+        self.state = UI_FIGHT
+        self.menu_index = {"col": 0, "row": 0}
+        self.cols, self.rows = 2, 2
+        self.options = [i[ABILITY_NAME] if i else "" for i in Monster.ally.abilities.values()]
+        pos = []
+        for r in range(self.rows):
+            for c in range(self.cols):
+                pos.append((200 + 420 * c, 50 + r * 70))
+        self.positions = pos
+
+        self.surf = pygame.surface.Surface((800, 200), flags=pygame.SRCALPHA).convert_alpha()
+        self.surf_rect = self.surf.get_rect()
+        self.surf_rect.left = 20
+        self.surf_rect.bottom = settings.HEIGHT - 20
+
+class MenuInfo(MenuStrategy):
+    def __init__(self):
+        super().__init__()
+
+    def _initialize(self):
+        self.state = UI_INFO
+        self.menu_index = {"col": 0, "row": 0}
+        self.cols, self.rows = 1, 1
+        self.options = [""]
+
+        self.surf = pygame.surface.Surface((settings.WIDTH - 40, 200), flags=pygame.SRCALPHA).convert_alpha()
+        self.surf_rect = self.surf.get_rect()
+        self.surf_rect.centerx = settings.WIDTH // 2
+        self.surf_rect.bottom = settings.HEIGHT - 20
+
+        self.positions = [(self.surf_rect.centerx, 40)]
+
+    def set_info(self, info):
+        self.options.clear()
+        self.options.append(info)
+
+
+class GameMenuUI(UIMenu):
     def __init__(self, game, menu_type, status=False):
         super().__init__(game, menu_type, status)
 
     def _select_option(self, selected):
-        if self.options[selected] == "RESUME":
+        if self.options[selected] == RESUME:
             self.toggle()
-        elif self.options[selected] == "QUIT":
+        elif self.options[selected] == QUIT:
             self.game.quit()
 
     def _menu_default(self):
         self.state = UI_DEFAULT
         self.menu_index = {"col": 0, "row": 0}
-        self.options = ["RESUME", "QUIT"]
+        self.options = [RESUME, QUIT]
         self.cols, self.rows = 1, 2
         pos = []
         for r in range(self.rows):
@@ -101,22 +215,18 @@ class GameMenuUI(MenuUI):
         self.positions = pos
 
 
-class BattleMenuUI(MenuUI):
+class BattleMenuUI(UIMenu):
     def __init__(self, game, menu_type, status=False):
         super().__init__(game, menu_type, status)
         self.battle_manager = BattleManager()
         self.ally_ui = MonsterUI()
         self.enemy_ui = MonsterUI()
 
-        self.ally = None
-        self.enemy = None
-
-    def initialize(self, ally, enemy):
-        self.ally = ally
-        self.enemy = enemy
-        self.battle_manager.initialize(ally, enemy)
-        self.ally_ui.set(ally)
-        self.enemy_ui.set(enemy)
+    def initialize(self):
+        new_monster = Enemy()
+        self.battle_manager.initialize(Monster.ally, new_monster)
+        self.ally_ui.set(Monster.ally)
+        self.enemy_ui.set(Monster.enemy)
 
     def draw(self):
         self.game.display.fill((190, 255, 190))
@@ -133,9 +243,9 @@ class BattleMenuUI(MenuUI):
 
     def _select_option(self, selected):
 
-        if self.options[selected] == "FIGHT":
+        if self.options[selected] == FIGHT:
             self._menu_fight()
-        elif self.options[selected]  == "ESCAPE":
+        elif self.options[selected]  == RUN:
             self.toggle()
 
         elif self.state == UI_FIGHT or self.state == UI_INFO:
@@ -153,14 +263,14 @@ class BattleMenuUI(MenuUI):
         self.state = UI_DEFAULT
         self.menu_index = {"col": 0, "row": 0}
         self.cols, self.rows = 2, 1
-        self.options = ["FIGHT", "ESCAPE"]
+        self.options = ["FIGHT", "RUN"]
         pos = []
         for r in range(self.rows):
             for c in range(self.cols):
                 pos.append((100 + 200 * c, 50 + r * 70))
         self.positions = pos
 
-        self.surf = pygame.surface.Surface((400, 200), flags=SRCALPHA).convert_alpha()
+        self.surf = pygame.surface.Surface((400, 200), flags=pygame.SRCALPHA).convert_alpha()
         self.surf_rect = self.surf.get_rect()
         self.surf_rect.right = settings.WIDTH - 20
         self.surf_rect.bottom = settings.HEIGHT - 20
@@ -169,14 +279,14 @@ class BattleMenuUI(MenuUI):
         self.state = UI_FIGHT
         self.menu_index = {"col": 0, "row": 0}
         self.cols, self.rows = 2, 2
-        self.options = [i[ABILITY_NAME] if i else "" for i in self.ally.abilities.values()]
+        self.options = [i[ABILITY_NAME] if i else "" for i in Monster.ally.abilities.values()]
         pos = []
         for r in range(self.rows):
             for c in range(self.cols):
                 pos.append((200 + 420 * c, 50 + r * 70))
         self.positions = pos
 
-        self.surf = pygame.surface.Surface((800, 200), flags=SRCALPHA).convert_alpha()
+        self.surf = pygame.surface.Surface((800, 200), flags=pygame.SRCALPHA).convert_alpha()
         self.surf_rect = self.surf.get_rect()
         self.surf_rect.left = 20
         self.surf_rect.bottom = settings.HEIGHT - 20
@@ -187,7 +297,7 @@ class BattleMenuUI(MenuUI):
         self.cols, self.rows = 1, 1
         self.options = [info]
 
-        self.surf = pygame.surface.Surface((settings.WIDTH - 40, 200), flags=SRCALPHA).convert_alpha()
+        self.surf = pygame.surface.Surface((settings.WIDTH - 40, 200), flags=pygame.SRCALPHA).convert_alpha()
         self.surf_rect = self.surf.get_rect()
         self.surf_rect.centerx = settings.WIDTH // 2
         self.surf_rect.bottom = settings.HEIGHT - 20

@@ -56,7 +56,7 @@ class Player(pygame.sprite.Sprite):
     def _check_sprite(self, just_pressed, dt):
         self.sprite_counter += dt * 1000
 
-        if self.movement == self.direction:
+        if self.movement == (0, 0):
             self.sprite_counter = 0
         if just_pressed[pygame.K_s]:
             self.sprite_direction = 0

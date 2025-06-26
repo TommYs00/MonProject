@@ -6,11 +6,11 @@ from typing import Optional, List
 import json
 
 class Monster(ABC):
-    _enemy: Optional["Enemy"] = None
-    _allies: Optional[List["Ally"]] = []
+    enemy: Optional["Enemy"] = None
+    ally: Optional["Ally"] = None
 
     def __init__(self, new_monster):
-        self._add(new_monster)
+        Monster._add(new_monster)
         self.alive = True
 
         self.name: str
@@ -86,9 +86,9 @@ class Monster(ABC):
     @classmethod
     def _add(cls, monster):
         if isinstance(monster, Enemy):
-            cls._enemy = monster
+            cls.enemy = monster
         elif isinstance(monster, Ally):
-            cls._allies.append(monster)
+            cls.ally = monster
 
 
 class Enemy(Monster):

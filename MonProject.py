@@ -1,6 +1,6 @@
 import pygame, sys
 from player import Player
-from ui import MenuUI, GameMenuUI, BattleMenuUI
+from ui import UIMenu, GameMenuUI, BattleMenuUI
 from monster import Enemy, Ally
 from map import MapManager
 from const import *
@@ -26,9 +26,9 @@ class MonProject:
         self.game_map.draw()
         self.player.draw()
 
-        if MenuUI.status[BATTLE_MENU]:
+        if UIMenu.status[BATTLE_MENU]:
             self.battle_screen.draw()
-        if MenuUI.status[GAME_MENU]:
+        if UIMenu.status[GAME_MENU]:
             self.esc_screen.draw()
 
         pygame.display.flip()
@@ -41,7 +41,7 @@ class MonProject:
         self.quit() if pygame.event.get(pygame.QUIT) else None
 
         if just_pressed[pygame.K_ESCAPE]:
-            if self.status[PAUSED] and MenuUI.status[GAME_MENU]:
+            if self.status[PAUSED] and UIMenu.status[GAME_MENU]:
                 self.esc_screen.toggle()
             elif not self.status[PAUSED]:
                 self.esc_screen.toggle()
@@ -52,12 +52,12 @@ class MonProject:
 
         if self.game_map.battle_encounter <= 0:
             self.game_map.new_encounter()
-            self.battle_screen.initialize(self.player.ally, Enemy())
+            self.battle_screen.initialize()
             self.battle_screen.toggle()
 
-        if MenuUI.status[GAME_MENU]:
+        if UIMenu.status[GAME_MENU]:
             self.esc_screen.check_action(just_pressed)
-        elif MenuUI.status[BATTLE_MENU]:
+        elif UIMenu.status[BATTLE_MENU]:
             self.battle_screen.check_action(just_pressed)
 
     def _check_collision(self):

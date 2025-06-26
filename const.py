@@ -7,6 +7,16 @@ UI_DEFAULT = "default"
 UI_FIGHT = "fight"
 UI_INFO = "info_panel"
 
+# Strategy names
+K_ESC = "key_escape"
+E_BATTLE = "event_battle"
+# Strategy names and options - battle Menu
+FIGHT = "FIGHT"
+RUN = "RUN"
+# Strategy options - escape Menu
+RESUME = "RESUME"
+QUIT = "QUIT"
+
 # BattleUI const
 BATTLE_MENU = "battle_menu"
 GAME_MENU = "game_menu"
@@ -15,7 +25,6 @@ OPTIONS = "options"
 ACTION = "action"
 SELECTED = "selected"
 POSITION = "position"
-
 
 # Creature const
 IMG = "img"
