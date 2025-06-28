@@ -1,7 +1,7 @@
 import random
 
 from const import *
-from monster import Monster
+from monster import Monster, AbilityNotFoundError
 
 
 class BattleManager:
@@ -15,7 +15,7 @@ class BattleManager:
 
     def initialize(self):
         Monster.ally.restore_stats()
-        Monster.new_enemy()
+        Monster.new_enemy(random.randint(0, 2))
         self.fighting = True
         self.attack_queue.clear()
 
@@ -55,43 +55,53 @@ class BattleManager:
             self.info_queue.append(f'Your {Monster.ally.name} just gained {Monster.ally.gain_exp(Monster.enemy.stats[LV])} exp. The battle is over!')
 
     def _player_attack(self, ability_key):
-        ability = Monster.ally.use_ability(ability_key, Monster.enemy)
+        ability, dmg = Monster.ally.use_ability(ability_key, Monster.enemy)
         string = ''
 
         if ability[DMG_BASE] or ability[DMG_MOD]:
-            string += f'Your {Monster.ally.name} attacked with "{ability[ABILITY_NAME]}".'
+            string += f'Your {Monster.ally.name} attacked with "{ability[ABILITY_NAME]}" ({dmg} DMG).'
         else:
             string += f'Your {Monster.ally.name} used "{ability[ABILITY_NAME]}".'
 
         if ability[DEBUFF_DMG]:
             if ability[DEBUFF_DMG][ATT]:
                 string += "\nEnemy's attack has been decreased!"
-            elif ability[DEBUFF_DMG][DEF]:
+            if ability[DEBUFF_DMG][DEF]:
                 string += "\nEnemy's defence has been decreased!"
 
         self._change_turn()
         self.info_queue.append(string)
 
     def _computer_attack(self):
-        ability_key = random.randint(0, 3)
-        while Monster.enemy.abilities[ability_key] == {}:
-            ability_key = random.randint(0, 3)
-        ability = Monster.enemy.use_ability(ability_key, Monster.ally)
+        try:
+            idx = self._pick_ability(Monster.enemy)
+            ability, dmg = Monster.enemy.use_ability(idx, Monster.ally)
+        except AbilityNotFoundError as e:
+            print(e)
+            ability, dmg = Monster.enemy.use_ability(0, Monster.ally)
+
         string = ''
 
         if ability[DMG_BASE] or ability[DMG_MOD]:
-            string += f'Wild {Monster.enemy.name} attacked with "{ability[ABILITY_NAME]}".'
+            string += f'Wild {Monster.enemy.name} attacked with "{ability[ABILITY_NAME]}" ({dmg} DMG).'
         else:
             string += f'Wild {Monster.enemy.name} used "{ability[ABILITY_NAME]}".'
 
         if ability[DEBUFF_DMG]:
             if ability[DEBUFF_DMG][ATT]:
-                string += f"\nYour {Monster.enemy.name}'s attack has been decreased!"
-            elif ability[DEBUFF_DMG][DEF]:
-                string += f"\nYour {Monster.enemy.name}'s defence has been decreased!"
+                string += f"\nYour {Monster.ally.name}'s attack has been decreased!"
+            if ability[DEBUFF_DMG][DEF]:
+                string += f"\nYour {Monster.ally.name}'s defence has been decreased!"
 
         self._change_turn()
         self.info_queue.append(string)
+
+    def _pick_ability(self, monster):
+        idx = random.randint(0, 3)
+        ability = monster.abilities.get(idx, monster.name)
+        if not ability:
+            raise AbilityNotFoundError(idx, monster)
+        return idx
 
     def _change_turn(self):
         self.player_turn = not self.player_turn

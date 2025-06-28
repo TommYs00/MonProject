@@ -1,15 +1,16 @@
 import pygame
-import settings
-from const import *
 from abc import ABC, abstractmethod
 from typing import Optional
 import json
+
+import settings
+from const import *
 
 class Monster(ABC):
     enemy: Optional["Enemy"] = None
     ally: Optional["Ally"] = None
 
-    def __init__(self, new_monster, index=0):
+    def __init__(self, new_monster, idx):
         Monster._add(new_monster)
         self.alive = True
 
@@ -30,11 +31,14 @@ class Monster(ABC):
                 DMG_MOD: int,
                 DEBUFF_DMG: dict[str:int]}]
 
-        self._load_data(index)
+        self._load_data(idx)
+
+    def __repr__(self):
+        return f'<Monster[{self.id}]: ---- {self.stats}, {self.abilities} ---->'
 
     def use_ability(self, ability, target):
-        target.receive_dmg(self.abilities[ability], self.stats[ATT][0])
-        return self.abilities[ability]
+        hp_dmg = target.receive_dmg(self.abilities[ability], self.stats[ATT][0])
+        return self.abilities[ability], hp_dmg
 
     def receive_dmg(self, ability, att):
         hp_dmg =  ability[DMG_MOD] * max(0, att - max(0, self.stats[DEF][0])) + ability[DMG_BASE]
@@ -50,6 +54,8 @@ class Monster(ABC):
                     self.stats[DEF][0] -= v if self.stats[DEF][0] - v >= 0 else 0
                 if k == SPD:
                     self.stats[SPD][0] -= v if self.stats[SPD][0] - v >= 0 else 0
+
+        return hp_dmg
 
     def restore_stats(self):
         for k, v in self.stats.items():
@@ -91,23 +97,32 @@ class Monster(ABC):
             cls.ally = monster
 
     @staticmethod
-    def new_enemy():
-        return Enemy()
+    def new_enemy(idx):
+        return Enemy(idx)
+
 
 class Enemy(Monster):
-    def __init__(self):
-        super().__init__(self)
+    def __init__(self, idx=0):
+        super().__init__(self, idx)
         self.image = pygame.transform.scale_by(pygame.image.load(f"images/monsters/front/{self.image}"), 2).convert_alpha()
 
     def gain_exp(self, enemy_lv):
         return 0
 
+
 class Ally(Monster):
-    def __init__(self):
-        super().__init__(self)
+    def __init__(self, idx=0):
+        super().__init__(self, idx)
         self.image = pygame.transform.scale_by(pygame.image.load(f"images/monsters/back/{self.image}"), 2).convert_alpha()
 
     def gain_exp(self, enemy_lv):
         exp = enemy_lv * settings.exp_multiplier
         self.stats[EXP][0] += exp
         return exp
+
+
+class AbilityNotFoundError(Exception):
+    def __init__(self, idx, monster):
+        super().__init__(f"{repr(monster)} – no ability with index {idx}.")
+        self.idx = idx
+        self.monster_name = monster

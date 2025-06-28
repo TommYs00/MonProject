@@ -40,11 +40,14 @@ class UI:
             selected = self._return_selected(just_pressed)
             if just_pressed[pygame.K_RETURN]:
                 self._select_option(selected)
-            elif just_pressed[pygame.K_ESCAPE] and self.strategy.parent is not None:
-                self.toggle(self.strategy.parent(self))
-        elif self.strategy is None:
-            if just_pressed[pygame.K_ESCAPE]:
-                self.toggle(StrategyESC(self))
+            elif just_pressed[pygame.K_ESCAPE]:
+                if self.strategy.parent is not None and self.strategy.type != UI_INFO:
+                    self.toggle(self.strategy.parent(self))
+                elif self.strategy.type == UI_ESC:
+                    self.toggle()
+        elif self.strategy is None and just_pressed[pygame.K_ESCAPE]:
+            self.toggle(StrategyESC(self))
+
 
     def _return_selected(self, just_pressed):
         selected = None
@@ -79,7 +82,6 @@ class UI:
                         elif fighting:
                             self.toggle(StrategyBattle(self))
 
-
     def _check_if_infobox(self):
         self.infobox_queue.extend(self.battle_manager.return_info_queue())
         if self.infobox_queue:
@@ -91,13 +93,7 @@ class UI:
 
     def draw(self):
         if self.strategy is not None:
-            if self.strategy.type == UI_FIGHT or self.strategy.type == UI_INFO:
-                self.game.display.fill((190, 255, 190))
-                self.enemy_ui.draw(self.game.display)
-                self.ally_ui.draw(self.game.display)
-                self.game.display.fill((220, 220, 220), pygame.Rect(0, settings.HEIGHT - 250, settings.WIDTH, 250))
-                self.game.display.fill((240, 240, 240), pygame.Rect(0, settings.HEIGHT - 240, settings.WIDTH, 250))
-
+            self.strategy.draw()
             self.surf.fill((0, 0, 0, 100))
             selected = self.menu_index["col"] + self.menu_index["row"] * self.cols
             for i, string in enumerate(self.options):
@@ -188,12 +184,18 @@ class MenuStrategy(ABC):
         self.initialize()
 
     @property
-    def parent(self):
-        return self._parent_strategy
+    def parent(self): return self._parent_strategy
+    @parent.setter
+    def parent(self, v): raise ProtectedVariableError
 
     @property
-    def type(self):
-        return self._type
+    def type(self): return self._type
+    @type.setter
+    def type(self, v): raise ProtectedVariableError
+
+    def draw(self):
+        if self.parent is not None:
+            self.parent.draw(self)
 
     @abstractmethod
     def initialize(self):
@@ -244,6 +246,13 @@ class StrategyBattle(MenuStrategy):
         self.ui.surf_rect.right = settings.WIDTH - 20
         self.ui.surf_rect.bottom = settings.HEIGHT - 20
 
+    def draw(self):
+        self.ui.game.display.fill((190, 255, 190))
+        self.ui.enemy_ui.draw(self.ui.game.display)
+        self.ui.ally_ui.draw(self.ui.game.display)
+        self.ui.game.display.fill((220, 220, 220), pygame.Rect(0, settings.HEIGHT - 250, settings.WIDTH, 250))
+        self.ui.game.display.fill((240, 240, 240), pygame.Rect(0, settings.HEIGHT - 240, settings.WIDTH, 250))
+
 # ------ Strategy 2 for MenuStrategy ------
 class StrategyFight(MenuStrategy):
     _type = UI_FIGHT
@@ -267,10 +276,11 @@ class StrategyFight(MenuStrategy):
         self.ui.surf_rect.left = 20
         self.ui.surf_rect.bottom = settings.HEIGHT - 20
 
+
 # ------ Strategy 3 for MenuStrategy ------
 class StrategyInfo(MenuStrategy):
     _type = UI_INFO
-    _parent_strategy = None
+    _parent_strategy = StrategyBattle
 
     def __init__(self, ui):
         super().__init__(ui)
@@ -285,3 +295,8 @@ class StrategyInfo(MenuStrategy):
         self.ui.surf_rect.centerx = settings.WIDTH // 2
         self.ui.surf_rect.bottom = settings.HEIGHT - 20
         self.ui.positions = [(self.ui.surf_rect.centerx, 40)]
+
+
+class ProtectedVariableError(Exception):
+    def __init__(self):
+        super().__init__("--- You cannot change the value of the protected attribute ---")

@@ -3,9 +3,8 @@ RUNNING = "running"
 PAUSED = "paused"
 
 # UI State const
-UI_DEFAULT = "default" ##
 UI_FIGHT = "fight_panel"
-UI_INFO = "info_panel" ##
+UI_INFO = "info_panel"
 UI_ESC = "escape_panel"
 
 # Strategy names

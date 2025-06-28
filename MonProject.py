@@ -75,5 +75,4 @@ class MonProject:
 
 if __name__ == "__main__":
     game = MonProject()
-    pygame.init()
     game.run()

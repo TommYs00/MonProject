@@ -4,7 +4,7 @@
     "name": "Chubboink",
     "img": "CHUBBOINK.png",
     "stats": {
-      "level": 1,
+      "level": 2,
       "exp": [0, 30],
       "health_points": [40, 40],
       "attack": [3, 3],
@@ -14,8 +14,8 @@
     "abilities": {
       "0": {
         "ability_name": "Fang Slam",
-        "dmg_base": 8,
-        "dmg_mod": 4,
+        "dmg_base": 6,
+        "dmg_mod": 6,
         "debuff_dmg": 0
       },
       "1": {
@@ -24,6 +24,89 @@
         "dmg_mod": 0,
         "debuff_dmg": {
           "attack": 0,
+          "defence": 1,
+          "speed": 0
+        }
+      },
+      "2": {
+        "ability_name": "Body Bash",
+        "dmg_base": 12,
+        "dmg_mod": 1,
+        "debuff_dmg": {
+          "attack": 0,
+          "defence": 0,
+          "speed": 0
+        }
+      },
+      "3": {}
+    }
+  },
+  "1": {
+    "id": 1,
+    "name": "Goobolt",
+    "img": "GOOBOLT.png",
+    "stats": {
+      "level": 3,
+      "exp": [0, 30],
+      "health_points": [38, 38],
+      "attack": [4, 4],
+      "defence": [2, 2],
+      "speed": [3, 3]
+    },
+    "abilities": {
+      "0": {
+        "ability_name": "Zap",
+        "dmg_base": 1,
+        "dmg_mod": 4,
+        "debuff_dmg": {
+          "attack": 0,
+          "defence": 1,
+          "speed": 0
+        }
+      },
+      "1": {
+        "ability_name": "Static Charge",
+        "dmg_base": 0,
+        "dmg_mod": 0,
+        "debuff_dmg": {
+          "attack": 1,
+          "defence": 0,
+          "speed": 0
+        }
+      },
+      "2": {},
+      "3": {}
+    }
+  },
+  "2": {
+    "id": 1,
+    "name": "Rhinplink",
+    "img": "RHINPLINK.png",
+    "stats": {
+      "level": 1,
+      "exp": [0, 30],
+      "health_points": [45, 45],
+      "attack": [2, 2],
+      "defence": [3, 3],
+      "speed": [1, 1]
+    },
+    "abilities": {
+      "0": {
+        "ability_name": "Leaf Whip",
+        "dmg_base": 7,
+        "dmg_mod": 3,
+        "debuff_dmg": {
+          "attack": 0,
+          "defence": 0,
+          "speed": 0
+        }
+      },
+      "1": {
+        "ability_name": "Spores",
+        "dmg_base": 0,
+        "dmg_mod": 0,
+        "debuff_dmg": {
+          "attack": 1,
           "defence": 1,
           "speed": 0
         }

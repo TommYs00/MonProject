@@ -5,12 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cfb2ff77-25ac-4768-b715-0b531d643ee9" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/README.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/images/monsters/back/GOOBOLT.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/images/monsters/back/RHINPLINK.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/images/monsters/front/GOOBOLT.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/images/monsters/front/RHINPLINK.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MonProject.py" beforeDir="false" afterPath="$PROJECT_DIR$/MonProject.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/battlemenager.py" beforeDir="false" afterPath="$PROJECT_DIR$/battlemanager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/battlemanager.py" beforeDir="false" afterPath="$PROJECT_DIR$/battlemanager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/const.py" beforeDir="false" afterPath="$PROJECT_DIR$/const.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/monster.py" beforeDir="false" afterPath="$PROJECT_DIR$/monster.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/player.py" beforeDir="false" afterPath="$PROJECT_DIR$/player.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/monsters.json" beforeDir="false" afterPath="$PROJECT_DIR$/monsters.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ui.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -211,12 +216,5 @@
         </entry>
       </map>
     </option>
-  </component>
-  <component name="XDebuggerManager">
-    <watches-manager>
-      <configuration name="PythonConfigurationType">
-        <watch expression="self.strategy" language="Python" />
-      </configuration>
-    </watches-manager>
   </component>
 </project>
