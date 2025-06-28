@@ -2,14 +2,14 @@ import pygame
 import settings
 from const import *
 from abc import ABC, abstractmethod
-from typing import Optional, List
+from typing import Optional
 import json
 
 class Monster(ABC):
     enemy: Optional["Enemy"] = None
     ally: Optional["Ally"] = None
 
-    def __init__(self, new_monster):
+    def __init__(self, new_monster, index=0):
         Monster._add(new_monster)
         self.alive = True
 
@@ -30,7 +30,7 @@ class Monster(ABC):
                 DMG_MOD: int,
                 DEBUFF_DMG: dict[str:int]}]
 
-        self._load_data()
+        self._load_data(index)
 
     def use_ability(self, ability, target):
         target.receive_dmg(self.abilities[ability], self.stats[ATT][0])
@@ -60,7 +60,7 @@ class Monster(ABC):
     def return_health_ratio(self):
         return self.stats[HP][0] / self.stats[HP][1]
 
-    def _load_data(self, index=0):
+    def _load_data(self, index):
         with open("monsters.json", "r") as json_data:
             data = json.load(json_data)[str(index)]
             self.id = data[ID]
@@ -90,6 +90,9 @@ class Monster(ABC):
         elif isinstance(monster, Ally):
             cls.ally = monster
 
+    @staticmethod
+    def new_enemy():
+        return Enemy()
 
 class Enemy(Monster):
     def __init__(self):

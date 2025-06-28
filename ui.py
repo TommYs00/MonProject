@@ -6,304 +6,112 @@ from const import *
 from monster import Monster, Ally, Enemy
 from battlemenager import BattleManager
 
-class UIMenu(ABC):
-    status = {} # TODO: do wywalenia
-    created = {} # TODO: do wywalenia
-
-    def __init__(self, game, menu_type, status):
-        UIMenu.created[menu_type] = self
-        UIMenu.status[menu_type] = status
+class UI:
+    def __init__(self, game):
         self.game = game
-        self.type = menu_type
-        self.font = pygame.font.Font(size=48)
+        self.strategy = None # -> obj
+        self.infobox_queue = []
 
-        self.strategy = None
-        self.state = None
-        self.menu_index = {"col": 0, "row": 0}
-        self.cols, self.rows = 0, 0
-        self.options = []
-        self.positions = []
+        self.font = None # -> pygame.font.Font
+        self.menu_index = {"col": 0, "row": 0} # -> dict[str: int, str: int]
+        self.cols, self.rows = None, None  # -> int, int
+        self.options = None  # -> list[str]
+        self.positions = None  # -> list[tuple]
+        self.surf = None  # -> pygame.surface.Surface
+        self.surf_rect = None  # -> pygame.rect.Rect
 
-        self.surf = pygame.surface.Surface((300, 400), flags=pygame.SRCALPHA).convert_alpha()
-        self.surf_rect = self.surf.get_rect()
-        self.surf_rect.center = settings.WIDTH // 2, settings.HEIGHT // 2
+        self.battle_manager = BattleManager()
+        self.ally_ui = MonsterUI()
+        self.enemy_ui = MonsterUI()
 
-        self._menu_default()
+    def toggle(self, strategy=None):
+        self.strategy = strategy
+        self.game.status[PAUSED] = True if strategy is not None else False
 
-    def toggle(self):
-        self._menu_default()
-        UIMenu.status[self.type] = not UIMenu.status[self.type]
-        self.game.status[PAUSED] = any([i for i in UIMenu.status.values()])
+    def initialize_battle(self):
+        self.battle_manager.initialize()
+        self.ally_ui.set(Monster.ally)
+        self.enemy_ui.set(Monster.enemy)
 
-    def draw(self):
-        self.surf.fill((0, 0, 0, 100))
+        self.toggle(StrategyBattle(self))
 
-        selected = self.menu_index["col"] + self.menu_index["row"] * self.cols
-        for i, string in enumerate(self.options):
-            if i == selected:
-                text = self.font.render(string, True, (255, 255, 255))
-            elif string == "":
-                text = self.font.render("—", True, (200, 200, 200))
-            else:
-                text = self.font.render(string, True, (200, 200, 200))
-            text_rect = text.get_rect()
-            text_rect.midtop = self.positions[i]
-            self.surf.blit(text, text_rect)
+    def check_keys(self, just_pressed):
+        if self.strategy is not None:
+            selected = self._return_selected(just_pressed)
+            if just_pressed[pygame.K_RETURN]:
+                self._select_option(selected)
+            elif just_pressed[pygame.K_ESCAPE] and self.strategy.parent is not None:
+                self.toggle(self.strategy.parent(self))
+        elif self.strategy is None:
+            if just_pressed[pygame.K_ESCAPE]:
+                self.toggle(StrategyESC(self))
 
-        self.game.display.blit(self.surf, self.surf_rect)
-
-    def check_action(self, just_pressed):
-        self.menu_index["col"] = (self.menu_index["col"] + just_pressed[pygame.K_RIGHT] - just_pressed[
-            pygame.K_LEFT]) % self.cols
-        self.menu_index["row"] = (self.menu_index["row"] + just_pressed[pygame.K_DOWN] - just_pressed[
-            pygame.K_UP]) % self.rows
-
-        selected = self.menu_index["col"] + self.menu_index["row"] * self.cols
-        while self.options[selected] == "":
+    def _return_selected(self, just_pressed):
+        selected = None
+        while selected is None or self.options[selected] == "":
             self.menu_index["col"] = (self.menu_index["col"] + just_pressed[pygame.K_RIGHT] - just_pressed[
                 pygame.K_LEFT]) % self.cols
             self.menu_index["row"] = (self.menu_index["row"] + just_pressed[pygame.K_DOWN] - just_pressed[
                 pygame.K_UP]) % self.rows
             selected = self.menu_index["col"] + self.menu_index["row"] * self.cols
-
-        if just_pressed[pygame.K_RETURN]:
-            selected = self.menu_index["col"] + self.menu_index["row"] * self.cols
-            self._select_option(selected)
-
-        # if just_pressed[pygame.K_ESCAPE] and not self.state == UI_DEFAULT and not self.state == UI_INFO:
-        #     self._menu_default()
+        return selected
 
     def _select_option(self, selected):
-        if self.options[selected] == RESUME:
+        if self.options[selected] == RESUME or self.options[selected] == RUN:
             self.toggle()
         elif self.options[selected] == QUIT:
             self.game.quit()
         elif self.options[selected] == FIGHT:
-            self._menu_fight()
-        elif self.options[selected] == RUN:
-            self.toggle()
+            self.toggle(StrategyFight(self))
 
-        elif self.state == UI_FIGHT or self.state == UI_INFO:
-            new_state = self.battle_manager.control_battle(self.state, selected)
+        elif self.strategy.type == UI_FIGHT or self.strategy.type == UI_INFO:
+            if not self._check_if_infobox():
+                if all([not self.battle_manager.attack_queue,
+                        self.strategy.type == UI_INFO,
+                        self.battle_manager.fighting]):
+                    self.toggle(StrategyBattle(self))
+                else:
+                    fighting = self.battle_manager.control_battle(selected)
 
-            if new_state == UI_INFO:
-                self._menu_info(self.battle_manager.return_info_string())
-            elif new_state == UI_DEFAULT:
-                self._menu_default()
-            elif not new_state:
-                self.toggle()
-
-
-class MenuStrategy(ABC):
-    def __init__(self, parent_strategy=None):
-        self.strategy_name = None  # -> str
-        self.parent_strategy = parent_strategy
-        self.menu_index = {"col": 0, "row": 0}
-        self.cols, self.rows = None, None # -> int, int
-        self.options = None # -> list[str]
-        self.positions = None # -> list[tuple]
-
-        self.surf = None # -> pygame.surface.Surface
-        self.surf_rect = None # -> pygame.rect.Rect
-
-        self._initialize()
-
-    @abstractmethod
-    def _initialize(self):
-        pass
-
-    @staticmethod
-    def draw():
-        pass
-
-# ------- STRATEGIES -------
-class MenuESC(MenuStrategy):
-    def __init__(self):
-        super().__init__()
-
-    def _initialize(self):
-        self.strategy_name = K_ESC
-        self.options = [RESUME, QUIT]
-        self.cols, self.rows = 1, 2
-        pos = []
-        for r in range(self.rows):
-            for c in range(self.cols):
-                pos.append((150 + 200 * c, 50 + r * 70))
-        self.positions = pos
-
-class MenuBattle(MenuStrategy):
-    def __init__(self):
-        super().__init__()
-
-    def _initialize(self):
-        self.state = UI_DEFAULT
-        self.menu_index = {"col": 0, "row": 0}
-        self.cols, self.rows = 2, 1
-        self.options = ["FIGHT", "RUN"]
-        pos = []
-        for r in range(self.rows):
-            for c in range(self.cols):
-                pos.append((100 + 200 * c, 50 + r * 70))
-        self.positions = pos
-
-        self.surf = pygame.surface.Surface((400, 200), flags=pygame.SRCALPHA).convert_alpha()
-        self.surf_rect = self.surf.get_rect()
-        self.surf_rect.right = settings.WIDTH - 20
-        self.surf_rect.bottom = settings.HEIGHT - 20
-
-class MenuFight(MenuStrategy):
-    def __init__(self):
-        super().__init__()
-
-    def _initialize(self):
-        self.state = UI_FIGHT
-        self.menu_index = {"col": 0, "row": 0}
-        self.cols, self.rows = 2, 2
-        self.options = [i[ABILITY_NAME] if i else "" for i in Monster.ally.abilities.values()]
-        pos = []
-        for r in range(self.rows):
-            for c in range(self.cols):
-                pos.append((200 + 420 * c, 50 + r * 70))
-        self.positions = pos
-
-        self.surf = pygame.surface.Surface((800, 200), flags=pygame.SRCALPHA).convert_alpha()
-        self.surf_rect = self.surf.get_rect()
-        self.surf_rect.left = 20
-        self.surf_rect.bottom = settings.HEIGHT - 20
-
-class MenuInfo(MenuStrategy):
-    def __init__(self):
-        super().__init__()
-
-    def _initialize(self):
-        self.state = UI_INFO
-        self.menu_index = {"col": 0, "row": 0}
-        self.cols, self.rows = 1, 1
-        self.options = [""]
-
-        self.surf = pygame.surface.Surface((settings.WIDTH - 40, 200), flags=pygame.SRCALPHA).convert_alpha()
-        self.surf_rect = self.surf.get_rect()
-        self.surf_rect.centerx = settings.WIDTH // 2
-        self.surf_rect.bottom = settings.HEIGHT - 20
-
-        self.positions = [(self.surf_rect.centerx, 40)]
-
-    def set_info(self, info):
-        self.options.clear()
-        self.options.append(info)
+                    if not self._check_if_infobox():
+                        if not fighting:
+                            self.toggle()
+                        elif fighting:
+                            self.toggle(StrategyBattle(self))
 
 
-class GameMenuUI(UIMenu):
-    def __init__(self, game, menu_type, status=False):
-        super().__init__(game, menu_type, status)
-
-    def _select_option(self, selected):
-        if self.options[selected] == RESUME:
-            self.toggle()
-        elif self.options[selected] == QUIT:
-            self.game.quit()
-
-    def _menu_default(self):
-        self.state = UI_DEFAULT
-        self.menu_index = {"col": 0, "row": 0}
-        self.options = [RESUME, QUIT]
-        self.cols, self.rows = 1, 2
-        pos = []
-        for r in range(self.rows):
-            for c in range(self.cols):
-                pos.append((150 + 200 * c, 50 + r * 70))
-        self.positions = pos
-
-
-class BattleMenuUI(UIMenu):
-    def __init__(self, game, menu_type, status=False):
-        super().__init__(game, menu_type, status)
-        self.battle_manager = BattleManager()
-        self.ally_ui = MonsterUI()
-        self.enemy_ui = MonsterUI()
-
-    def initialize(self):
-        new_monster = Enemy()
-        self.battle_manager.initialize(Monster.ally, new_monster)
-        self.ally_ui.set(Monster.ally)
-        self.enemy_ui.set(Monster.enemy)
+    def _check_if_infobox(self):
+        self.infobox_queue.extend(self.battle_manager.return_info_queue())
+        if self.infobox_queue:
+            if self.strategy.type != UI_INFO:
+                self.toggle(StrategyInfo(self))
+            self.options = [self.infobox_queue.pop(0)]
+            return True
+        return False
 
     def draw(self):
-        self.game.display.fill((190, 255, 190))
-        self.enemy_ui.draw(self.game.display)
-        self.ally_ui.draw(self.game.display)
-        self.game.display.fill((220, 220, 220), pygame.Rect(0, settings.HEIGHT - 250, settings.WIDTH, 250))
-        self.game.display.fill((240, 240, 240), pygame.Rect(0, settings.HEIGHT - 240, settings.WIDTH, 250))
-        super().draw()
+        if self.strategy is not None:
+            if self.strategy.type == UI_FIGHT or self.strategy.type == UI_INFO:
+                self.game.display.fill((190, 255, 190))
+                self.enemy_ui.draw(self.game.display)
+                self.ally_ui.draw(self.game.display)
+                self.game.display.fill((220, 220, 220), pygame.Rect(0, settings.HEIGHT - 250, settings.WIDTH, 250))
+                self.game.display.fill((240, 240, 240), pygame.Rect(0, settings.HEIGHT - 240, settings.WIDTH, 250))
 
-    def check_action(self, just_pressed):
-        super().check_action(just_pressed)
-        if just_pressed[pygame.K_ESCAPE] and not self.state == UI_DEFAULT and not self.state == UI_INFO:
-            self._menu_default()
+            self.surf.fill((0, 0, 0, 100))
+            selected = self.menu_index["col"] + self.menu_index["row"] * self.cols
+            for i, string in enumerate(self.options):
+                if i == selected:
+                    text = self.font.render(string, True, (255, 255, 255))
+                elif string == "":
+                    text = self.font.render("—", True, (200, 200, 200))
+                else:
+                    text = self.font.render(string, True, (200, 200, 200))
+                text_rect = text.get_rect()
+                text_rect.midtop = self.positions[i]
+                self.surf.blit(text, text_rect)
 
-    def _select_option(self, selected):
-
-        if self.options[selected] == FIGHT:
-            self._menu_fight()
-        elif self.options[selected]  == RUN:
-            self.toggle()
-
-        elif self.state == UI_FIGHT or self.state == UI_INFO:
-            new_state = self.battle_manager.control_battle(self.state, selected)
-
-            if new_state == UI_INFO:
-                self._menu_info(self.battle_manager.return_info_string())
-            elif new_state == UI_DEFAULT:
-                self._menu_default()
-            elif not new_state:
-                self.toggle()
-
-# ----- MENU ---------------------------------------------
-    def _menu_default(self):
-        self.state = UI_DEFAULT
-        self.menu_index = {"col": 0, "row": 0}
-        self.cols, self.rows = 2, 1
-        self.options = ["FIGHT", "RUN"]
-        pos = []
-        for r in range(self.rows):
-            for c in range(self.cols):
-                pos.append((100 + 200 * c, 50 + r * 70))
-        self.positions = pos
-
-        self.surf = pygame.surface.Surface((400, 200), flags=pygame.SRCALPHA).convert_alpha()
-        self.surf_rect = self.surf.get_rect()
-        self.surf_rect.right = settings.WIDTH - 20
-        self.surf_rect.bottom = settings.HEIGHT - 20
-
-    def _menu_fight(self):
-        self.state = UI_FIGHT
-        self.menu_index = {"col": 0, "row": 0}
-        self.cols, self.rows = 2, 2
-        self.options = [i[ABILITY_NAME] if i else "" for i in Monster.ally.abilities.values()]
-        pos = []
-        for r in range(self.rows):
-            for c in range(self.cols):
-                pos.append((200 + 420 * c, 50 + r * 70))
-        self.positions = pos
-
-        self.surf = pygame.surface.Surface((800, 200), flags=pygame.SRCALPHA).convert_alpha()
-        self.surf_rect = self.surf.get_rect()
-        self.surf_rect.left = 20
-        self.surf_rect.bottom = settings.HEIGHT - 20
-
-    def _menu_info(self, info):
-        self.state = UI_INFO
-        self.menu_index = {"col": 0, "row": 0}
-        self.cols, self.rows = 1, 1
-        self.options = [info]
-
-        self.surf = pygame.surface.Surface((settings.WIDTH - 40, 200), flags=pygame.SRCALPHA).convert_alpha()
-        self.surf_rect = self.surf.get_rect()
-        self.surf_rect.centerx = settings.WIDTH // 2
-        self.surf_rect.bottom = settings.HEIGHT - 20
-
-        self.positions = [(self.surf_rect.centerx, 40)]
-
+            self.game.display.blit(self.surf, self.surf_rect)
 
 class MonsterUI:
     def __init__(self):
@@ -369,3 +177,111 @@ class MonsterUI:
             self.surf_rect.bottom = settings.HEIGHT - 170
             self.ib_rect.right = settings.WIDTH // 2
             self.ib_rect.y += 400
+
+# ------------------------------- Menu Strategies -------------------------------
+class MenuStrategy(ABC):
+    _type = None
+    _parent_strategy = None
+
+    def __init__(self, ui):
+        self.ui = ui
+        self.initialize()
+
+    @property
+    def parent(self):
+        return self._parent_strategy
+
+    @property
+    def type(self):
+        return self._type
+
+    @abstractmethod
+    def initialize(self):
+        pass
+
+# ------ Strategy 1 for MenuStrategy ------
+class StrategyESC(MenuStrategy):
+    _type = UI_ESC
+    _parent_strategy = None
+
+    def __init__(self, ui):
+        super().__init__(ui)
+
+    def initialize(self):
+        self.ui.font = pygame.font.Font(size=48)
+        self.ui.menu_index = {"col": 0, "row": 0}
+        self.ui.cols, self.ui.rows = 1, 2
+        self.ui.options = [RESUME, QUIT]
+        pos = []
+        for r in range(self.ui.rows):
+            for c in range(self.ui.cols):
+                pos.append((150 + 200 * c, 50 + r * 70))
+        self.ui.positions = pos
+        self.ui.surf = pygame.surface.Surface((300, 400), flags=pygame.SRCALPHA).convert_alpha()
+        self.ui.surf_rect = self.ui.surf.get_rect()
+        self.ui.surf_rect.center = settings.WIDTH // 2, settings.HEIGHT // 2
+
+# ------ Strategy 2 for MenuStrategy ------
+class StrategyBattle(MenuStrategy):
+    _type = UI_FIGHT
+    _parent_strategy = None
+
+    def __init__(self, ui):
+        super().__init__(ui)
+
+    def initialize(self):
+        self.ui.font = pygame.font.Font(size=48)
+        self.ui.menu_index = {"col": 0, "row": 0}
+        self.ui.cols, self.ui.rows = 2, 1
+        self.ui.options = ["FIGHT", "RUN"]
+        pos = []
+        for r in range(self.ui.rows):
+            for c in range(self.ui.cols):
+                pos.append((100 + 200 * c, 50 + r * 70))
+        self.ui.positions = pos
+        self.ui.surf = pygame.surface.Surface((400, 200), flags=pygame.SRCALPHA).convert_alpha()
+        self.ui.surf_rect = self.ui.surf.get_rect()
+        self.ui.surf_rect.right = settings.WIDTH - 20
+        self.ui.surf_rect.bottom = settings.HEIGHT - 20
+
+# ------ Strategy 2 for MenuStrategy ------
+class StrategyFight(MenuStrategy):
+    _type = UI_FIGHT
+    _parent_strategy = StrategyBattle
+
+    def __init__(self, ui):
+        super().__init__(ui)
+
+    def initialize(self):
+        self.ui.font = pygame.font.Font(size=48)
+        self.ui.menu_index = {"col": 0, "row": 0}
+        self.ui.cols, self.ui.rows = 2, 2
+        self.ui.options = [i[ABILITY_NAME] if i else "" for i in Monster.ally.abilities.values()]
+        pos = []
+        for r in range(self.ui.rows):
+            for c in range(self.ui.cols):
+                pos.append((200 + 420 * c, 50 + r * 70))
+        self.ui.positions = pos
+        self.ui.surf = pygame.surface.Surface((800, 200), flags=pygame.SRCALPHA).convert_alpha()
+        self.ui.surf_rect = self.ui.surf.get_rect()
+        self.ui.surf_rect.left = 20
+        self.ui.surf_rect.bottom = settings.HEIGHT - 20
+
+# ------ Strategy 3 for MenuStrategy ------
+class StrategyInfo(MenuStrategy):
+    _type = UI_INFO
+    _parent_strategy = None
+
+    def __init__(self, ui):
+        super().__init__(ui)
+
+    def initialize(self):
+        self.ui.font = pygame.font.Font(size=48)
+        self.ui.menu_index = {"col": 0, "row": 0}
+        self.ui.cols, self.ui.rows = 1, 1
+        self.ui.options = ["<undefined>"]
+        self.ui.surf = pygame.surface.Surface((settings.WIDTH - 40, 200), flags=pygame.SRCALPHA).convert_alpha()
+        self.ui.surf_rect = self.ui.surf.get_rect()
+        self.ui.surf_rect.centerx = settings.WIDTH // 2
+        self.ui.surf_rect.bottom = settings.HEIGHT - 20
+        self.ui.positions = [(self.ui.surf_rect.centerx, 40)]

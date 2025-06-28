@@ -3,19 +3,21 @@ RUNNING = "running"
 PAUSED = "paused"
 
 # UI State const
-UI_DEFAULT = "default"
-UI_FIGHT = "fight"
-UI_INFO = "info_panel"
+UI_DEFAULT = "default" ##
+UI_FIGHT = "fight_panel"
+UI_INFO = "info_panel" ##
+UI_ESC = "escape_panel"
 
 # Strategy names
 K_ESC = "key_escape"
 E_BATTLE = "event_battle"
-# Strategy names and options - battle Menu
+# Strategy names and options
 FIGHT = "FIGHT"
 RUN = "RUN"
-# Strategy options - escape Menu
+# Strategy options
 RESUME = "RESUME"
 QUIT = "QUIT"
+EMPTY_INFOBOX = " "
 
 # BattleUI const
 BATTLE_MENU = "battle_menu"

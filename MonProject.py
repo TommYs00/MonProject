@@ -1,10 +1,12 @@
 import pygame, sys
-from player import Player
-from ui import UIMenu, GameMenuUI, BattleMenuUI
-from monster import Enemy, Ally
-from map import MapManager
-from const import *
+
 import settings
+from const import *
+from ui import UI
+from map import MapManager
+from player import Player
+from monster import Ally
+
 
 class MonProject:
     def __init__(self):
@@ -15,8 +17,7 @@ class MonProject:
         self.status = {RUNNING: True,
                        PAUSED: False}
 
-        self.esc_screen = GameMenuUI(self, GAME_MENU)
-        self.battle_screen = BattleMenuUI(self, BATTLE_MENU)
+        self.ui = UI(self)
         self.game_map = MapManager(self.display)
 
         self.player = Player(self.display, self.game_map.collider_tiles, Ally())
@@ -25,26 +26,18 @@ class MonProject:
         self.display.fill((0, 0, 0))
         self.game_map.draw()
         self.player.draw()
-
-        if UIMenu.status[BATTLE_MENU]:
-            self.battle_screen.draw()
-        if UIMenu.status[GAME_MENU]:
-            self.esc_screen.draw()
+        self.ui.draw()
 
         pygame.display.flip()
 
     def check_key_events(self):
+        self.quit() if pygame.event.get(pygame.QUIT) else None
+
         pressed = pygame.key.get_pressed()
         just_pressed = pygame.key.get_just_pressed()
         dt = self.clock.tick() / 1000
 
-        self.quit() if pygame.event.get(pygame.QUIT) else None
-
-        if just_pressed[pygame.K_ESCAPE]:
-            if self.status[PAUSED] and UIMenu.status[GAME_MENU]:
-                self.esc_screen.toggle()
-            elif not self.status[PAUSED]:
-                self.esc_screen.toggle()
+        self.ui.check_keys(just_pressed)
 
         if not self.status[PAUSED]:
             self.player.move(pressed, just_pressed, dt)
@@ -52,13 +45,7 @@ class MonProject:
 
         if self.game_map.battle_encounter <= 0:
             self.game_map.new_encounter()
-            self.battle_screen.initialize()
-            self.battle_screen.toggle()
-
-        if UIMenu.status[GAME_MENU]:
-            self.esc_screen.check_action(just_pressed)
-        elif UIMenu.status[BATTLE_MENU]:
-            self.battle_screen.check_action(just_pressed)
+            self.ui.initialize_battle()
 
     def _check_collision(self):
        if pygame.sprite.spritecollideany(self.player, self.game_map.bush_tiles):
