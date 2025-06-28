@@ -80,15 +80,15 @@ class BattleManager:
         string = ''
 
         if ability[DMG_BASE] or ability[DMG_MOD]:
-            string += f'Wild {Monster.ally.name} attacked with "{ability[ABILITY_NAME]}".'
+            string += f'Wild {Monster.enemy.name} attacked with "{ability[ABILITY_NAME]}".'
         else:
-            string += f'Wild {Monster.ally.name} used "{ability[ABILITY_NAME]}".'
+            string += f'Wild {Monster.enemy.name} used "{ability[ABILITY_NAME]}".'
 
         if ability[DEBUFF_DMG]:
             if ability[DEBUFF_DMG][ATT]:
-                string += f"\nYour {Monster.ally.name}'s attack has been decreased!"
+                string += f"\nYour {Monster.enemy.name}'s attack has been decreased!"
             elif ability[DEBUFF_DMG][DEF]:
-                string += f"\nYour {Monster.ally.name}'s defence has been decreased!"
+                string += f"\nYour {Monster.enemy.name}'s defence has been decreased!"
 
         self._change_turn()
         self.info_queue.append(string)

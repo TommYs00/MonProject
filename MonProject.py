@@ -9,7 +9,13 @@ from monster import Ally
 
 
 class MonProject:
+    _instance = None
+
     def __init__(self):
+        if hasattr(self, '_initialized') and self._initialized:
+            return
+
+        self._initialized = True
         pygame.init()
         pygame.display.set_caption("MonProject")
         self.display = pygame.display.set_mode(settings.RESOLUTION)
@@ -21,6 +27,11 @@ class MonProject:
         self.game_map = MapManager(self.display)
 
         self.player = Player(self.display, self.game_map.collider_tiles, Ally())
+
+    def __new__(cls):
+        if not cls._instance:
+            cls._instance = super().__new__(cls)
+        return cls._instance
 
     def update_display(self):
         self.display.fill((0, 0, 0))

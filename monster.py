@@ -49,7 +49,7 @@ class Monster(ABC):
                 if k == DEF:
                     self.stats[DEF][0] -= v if self.stats[DEF][0] - v >= 0 else 0
                 if k == SPD:
-                    self.stats[SPD][0] -= v if self.stats[DEF][0] - v >= 0 else 0
+                    self.stats[SPD][0] -= v if self.stats[SPD][0] - v >= 0 else 0
 
     def restore_stats(self):
         for k, v in self.stats.items():

@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 import settings
 from const import *
 from monster import Monster, Ally, Enemy
-from battlemenager import BattleManager
+from battlemanager import BattleManager
 
 class UI:
     def __init__(self, game):

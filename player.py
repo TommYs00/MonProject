@@ -24,8 +24,8 @@ class Player(pygame.sprite.Sprite):
         # image and rects
         self.image= pygame.transform.scale_by(self.image_dict[0][2], 4)
         self.image_rect = self.image.get_rect()
-        self.rect = pygame.rect.FRect(settings.staring_x, settings.starting_y, 5, 5)
-        self.rect.center = settings.staring_x, settings.starting_y
+        self.rect = pygame.rect.FRect(settings.starting_x, settings.starting_y, 5, 5)
+        self.rect.center = settings.starting_x, settings.starting_y
 
         # movement
         self.direction = pygame.Vector2(0, 0) # kierunek ruchu w danej iteracji
